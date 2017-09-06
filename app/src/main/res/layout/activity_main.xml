@@ -1,38 +1,76 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
-            <TextView
-                android:id="@+id/tv_main_local"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center_horizontal"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
-                android:text="本地歌曲" />
-
-            <TextView
-                android:id="@+id/tv_main_remote"
-                android:layout_width="0dip"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center_horizontal"
-                android:paddingBottom="10dp"
-                android:paddingTop="10dp"
-                android:text="网络搜索"
-                android:textColor="#ffff" />
-
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
 
     <LinearLayout
-        android:id="@+id/linearLayout"
+        android:id="@+id/linearLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="@dimen/top_tab_height"
+        android:background="@color/main_top_color" >
+
+        <TextView
+            android:id="@+id/localmusic_tv"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="@string/localmusic"
+            android:textStyle="bold"
+            android:textColor="@color/main_top_tab_color"
+            android:textSize="@dimen/main_top_tab_text_size" />
+
+        <TextView
+            android:id="@+id/netmusic_tv"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="@string/netmusic"
+            android:textStyle="bold"
+            android:textColor="@color/main_top_tab_color"
+            android:textSize="@dimen/main_top_tab_text_size" />
+
+        <TextView
+            android:id="@+id/mylovemusic_tv"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="@string/mylovemusic"
+            android:textStyle="bold"
+            android:textColor="@color/main_top_tab_color"
+            android:textSize="@dimen/main_top_tab_text_size" />
+    </LinearLayout>
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/main_line_height"
+        android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:layout_gravity="left|top"></LinearLayout>
+        android:background="@color/main_top_color"
+        >
+
+        <ImageView
+            android:id="@+id/cursor"
+            android:layout_width="@dimen/main_matrix_width"
+            android:layout_height="@dimen/main_line_height"
+            android:scaleType="matrix"
+            android:src="@color/matrix_color" />
+    </LinearLayout>
+    <View
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/main_top_color"/>
 
 
-</FrameLayout>
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vPager"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_weight="1.0"
+        android:background="@color/white"
+        android:flipInterval="30"
+        android:persistentDrawingCache="animation" />
+</LinearLayout>
