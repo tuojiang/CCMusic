@@ -1,7 +1,14 @@
 package oyh.ccmusic.activity;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
@@ -23,6 +30,7 @@ import oyh.ccmusic.adapter.MFragmentPagerAdapter;
 import oyh.ccmusic.fragment.LocalMusicFragment;
 import oyh.ccmusic.fragment.MloveMusicFragment;
 import oyh.ccmusic.fragment.NetMusicFragment;
+import oyh.ccmusic.util.MusicUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,7 +51,14 @@ public class MainActivity extends AppCompatActivity {
     private int currentIndex;
     private ArrayList<Fragment> fragmentArrayList;
     private FragmentManager fragmentManager;
-    public Context context;
+    public static Context context;
+
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +76,17 @@ public class MainActivity extends AppCompatActivity {
         //初始化InitImageView
         InitImageView();
 
+        //权限获取
+        verifyStoragePermissions(this);
+
+        //注册广播
+        registerReceiver();
+    }
+    private void registerReceiver() {
+        IntentFilter filter = new IntentFilter(Intent.ACTION_MEDIA_SCANNER_STARTED);
+        filter.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
+        filter.addDataScheme("file");
+        registerReceiver(mScanSDCardReceiver, filter);
     }
     /**
      * 初始化页卡游标
@@ -127,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
      * 初始化标题栏
      */
     private void InitTextView() {
+        context=getApplicationContext();
         localMTextview= (TextView) findViewById(R.id.localmusic_tv);
         netMTextview= (TextView) findViewById(R.id.netmusic_tv);
         myloveMTextview= (TextView) findViewById(R.id.mylovemusic_tv);
@@ -218,6 +245,44 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPageScrollStateChanged(int state) {
 
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mScanSDCardReceiver);
+        super.onDestroy();
+
+    }
+
+
+    /**
+     * 注册扫描完毕的广播接收者
+     */
+    private BroadcastReceiver mScanSDCardReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(Intent.ACTION_MEDIA_SCANNER_FINISHED)) {
+                MusicUtils.initMusicList();
+                ((LocalMusicFragment)fragmentArrayList.get(0)).onMusicListChanged();
+            }
+        }
+    };
+
+    /**
+     * 权限获取
+     * @param activity
+     */
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
         }
     }
 }

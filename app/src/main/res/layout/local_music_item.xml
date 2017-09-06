@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="10dp">
+
+    <View
+        android:id="@+id/music_list_selected"
+        android:background="@android:color/holo_blue_dark"
+        android:layout_width="2dp"
+        android:layout_height="50dp" />
+
+    <ImageView
+        android:id="@+id/music_list_icon"
+        android:scaleType="centerCrop"
+        android:layout_marginLeft="5dp"
+        android:layout_toRightOf="@id/music_list_selected"
+        android:src="@mipmap/img"
+        android:layout_width="50dp"
+        android:layout_height="50dp" />
+
+    <TextView
+        android:id="@+id/tv_music_list_title"
+        android:text="音乐标题"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="3dp"
+        android:singleLine="true"
+        android:layout_toRightOf="@id/music_list_icon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/tv_music_list_artist"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="3dp"
+        android:maxLines="2"
+        android:textSize="12sp"
+        android:textColor="@android:color/white"
+        android:text="艺术家"
+        android:layout_toRightOf="@id/music_list_icon"
+        android:layout_below="@id/tv_music_list_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</RelativeLayout>

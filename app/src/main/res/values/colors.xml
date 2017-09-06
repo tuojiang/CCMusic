@@ -10,4 +10,5 @@
     <color name="matrix_color">#ffffff</color>
     <color name="white">#ffffff</color>
     <color name="red">#FFFF1826</color>
+    <color name="main_dark">#FF535353</color>
 </resources>
