@@ -32,8 +32,10 @@ import oyh.ccmusic.fragment.LocalMusicFragment;
 import oyh.ccmusic.fragment.MloveMusicFragment;
 import oyh.ccmusic.fragment.NetMusicFragment;
 import oyh.ccmusic.util.MusicUtils;
-
-public class MainActivity extends AppCompatActivity {
+/**
+ * Created by yihong.ou on 17-9-7.
+ */
+public class MainActivity extends BaseActivity {
 
     private TextView localMTextview;
     private TextView netMTextview;
