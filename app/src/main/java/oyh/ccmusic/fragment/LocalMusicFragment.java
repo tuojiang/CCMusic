@@ -7,9 +7,9 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,18 +21,15 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import oyh.ccmusic.R;
-import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.adapter.LocalMusicListAdapter;
 import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
 import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
-import oyh.ccmusic.util.LocalMusicUtils;
 
 /**
  * 本地列表fragment
@@ -53,7 +50,7 @@ public class LocalMusicFragment extends Fragment {
     private Button preBtn;
     private Handler mHandler = new Handler();
     private ArrayList<Music> mMediaLists = new ArrayList<>();
-    private LocalMusicListAdapter adapter= new LocalMusicListAdapter();;
+    private LocalMusicListAdapter adapter= new LocalMusicListAdapter();
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -73,7 +70,7 @@ public class LocalMusicFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View layout=inflater.inflate(R.layout.fragment_local_music_list, container, false);
+        View layout=inflater.inflate(R.layout.fragment_local_music_list, null);
         setupViews(layout);
         return layout;
     }
@@ -94,28 +91,11 @@ public class LocalMusicFragment extends Fragment {
         mListView.setOnItemClickListener(mMusicItemClickListener);
         mListView.setAdapter(adapter);
 
-
-        asyncQueryMedia();
     }
 
     /**
-     * 异步查询
+     * 监听歌曲点击事件
      */
-    private void asyncQueryMedia() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mMediaLists.clear();
-                LocalMusicUtils.queryMusic(Environment.getExternalStorageDirectory() + File.separator);
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.setListData(mMediaLists);
-                    }
-                });
-            }
-        }).start();
-    }
     private AdapterView.OnItemClickListener mMusicItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position,
@@ -123,23 +103,7 @@ public class LocalMusicFragment extends Fragment {
             Toast.makeText(getContext(),"11111",Toast.LENGTH_SHORT).show();
         }
     };
-    /**
-     * 权限获取
-     * @param activity
-     */
-    public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
 
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
-    }
     public void onMusicListChanged() {
         adapter.notifyDataSetChanged();
     }

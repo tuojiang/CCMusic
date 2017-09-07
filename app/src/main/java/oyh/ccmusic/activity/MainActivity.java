@@ -15,6 +15,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -81,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
 
         //注册广播
         registerReceiver();
+
+        MusicUtils.initMusicList();
+
     }
     private void registerReceiver() {
         IntentFilter filter = new IntentFilter(Intent.ACTION_MEDIA_SCANNER_STARTED);
@@ -143,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
      * 初始化Fragment
      */
     private void InitFragment() {
+        MusicUtils.initMusicList();
         fragmentArrayList=new ArrayList<>();
         fragmentArrayList.add(new LocalMusicFragment());
         fragmentArrayList.add(new NetMusicFragment());
@@ -263,7 +268,9 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(Intent.ACTION_MEDIA_SCANNER_FINISHED)) {
                 MusicUtils.initMusicList();
+                Log.e("MainActivity","receiver");
                 ((LocalMusicFragment)fragmentArrayList.get(0)).onMusicListChanged();
+                Log.e("MainActivity","receiver"+fragmentArrayList.size());
             }
         }
     };

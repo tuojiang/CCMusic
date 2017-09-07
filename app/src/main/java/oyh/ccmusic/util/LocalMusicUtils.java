@@ -11,6 +11,7 @@ import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
 
 /**
+ * 本地音乐列表工具类
  * Created by yihong.ou on 17-9-7.
  */
 public class LocalMusicUtils {
