@@ -3,6 +3,8 @@ package oyh.ccmusic.fragment;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Service;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -30,6 +32,8 @@ import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
 import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
+import oyh.ccmusic.service.LocalMusicService;
+import oyh.ccmusic.util.MusicUtils;
 
 /**
  * 本地列表fragment
@@ -67,6 +71,21 @@ public class LocalMusicFragment extends Fragment {
         mActivity = (MainActivity) activity;
     }
 
+    /**
+     * 在这里回调通知绑定服务
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+//        mActivity.allowBindService();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mActivity.allowUnbindService();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -100,9 +119,30 @@ public class LocalMusicFragment extends Fragment {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position,
                                 long id) {
-            Toast.makeText(getContext(),"11111",Toast.LENGTH_SHORT).show();
+            playSong(position);
         }
     };
+
+    /**
+     * 播放歌曲的刷新面板
+     * @param position
+     */
+    private void playSong(int position) {
+        Intent intent = new Intent(mActivity, LocalMusicService.class);
+        intent.putExtra("CURRENT_POSITION", position);
+        mActivity.allowBindService();
+        updatePanel(position);
+    }
+
+    /**
+     * 更新面板的信息
+     * @param position
+     */
+    private void updatePanel(int position) {
+        if (MusicUtils.sMusicList.isEmpty()||position<0) return;
+        seekBar.setMax(mActivity.getLocalMusicService().callTotalDate());
+
+    }
 
     public void onMusicListChanged() {
         adapter.notifyDataSetChanged();

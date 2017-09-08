@@ -31,6 +31,7 @@ import oyh.ccmusic.adapter.MFragmentPagerAdapter;
 import oyh.ccmusic.fragment.LocalMusicFragment;
 import oyh.ccmusic.fragment.MloveMusicFragment;
 import oyh.ccmusic.fragment.NetMusicFragment;
+import oyh.ccmusic.service.LocalMusicService;
 import oyh.ccmusic.util.MusicUtils;
 /**
  * Created by yihong.ou on 17-9-7.
@@ -93,6 +94,13 @@ public class MainActivity extends BaseActivity {
         filter.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
         filter.addDataScheme("file");
         registerReceiver(mScanSDCardReceiver, filter);
+    }
+    /**
+     * 获取音乐播放服务
+     * @return
+     */
+    public LocalMusicService.CallBack getLocalMusicService() {
+        return callBack;
     }
     /**
      * 初始化页卡游标
