@@ -10,8 +10,6 @@ import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +22,6 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
@@ -38,7 +35,6 @@ import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
 import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
-import oyh.ccmusic.service.LocalMusicService;
 import oyh.ccmusic.util.MusicUtils;
 
 /**
@@ -49,6 +45,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private LrcProcess mLrcProcess; //歌词处理
     private ArrayList<LrcContent> lrcList = new ArrayList<>(); //存放歌词列表对象
     private int currentPos=0;         // 记录当前正在播放的音乐
+    private int currentPlayTime=0;
     public LrcView lrcView; // 自定义歌词视图
     private MainActivity mActivity;
     private int mProgress;      //进度条
@@ -59,7 +56,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private TextView mArtTextView;
     private static TextView currentTimeTxt;
     private static TextView totalTimeTxt;
-    private boolean mFlag = true;
     private Timer timer;
     private boolean isSeekBarChanging;
     private ImageView mIcoImageView;
@@ -140,6 +136,10 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
 
         public void onProgressChanged(SeekBar seekBar, int progress,
                                       boolean fromUser) {
+            mProgress = progress;
+            //更新播放时间
+            String current = format.format(new Date(mProgress));
+            currentTimeTxt.setText(current);
         }
 
         /*滚动时,应当暂停后台定时器*/
@@ -186,6 +186,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         if (MusicUtils.sMusicList.isEmpty()||position<0) return;
         int totalTime=mActivity.getLocalMusicService().callTotalDate();
         int currentTime = mActivity.getLocalMusicService().callCurrentTime();
+        currentPlayTime=currentTime;
         seekBar.setMax(totalTime);
         seekBar.setProgress(currentTime);
         String current = format .format(new Date(currentTime));
@@ -200,6 +201,9 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             public void run() {
                 if(!isSeekBarChanging){
                     //TODO 进度条走动时间更新
+//                    int currentTime = mActivity.getLocalMusicService().callCurrentTime();
+//                    String current = format .format(new Date(currentTime));
+//                    currentTimeTxt.setText(current);
                     seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
                 }
             }
@@ -236,6 +240,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             case R.id.music_list_icon:
             Intent intent = new Intent(mActivity,PlayActivity.class);
             intent.putExtra("CURRENT_POSITION", currentPos);
+//            intent.putExtra("TOTALTIME", currentPlayTime);
             startActivity(intent);
                 break;
         }

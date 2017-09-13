@@ -107,6 +107,22 @@ public class MainActivity extends FragmentActivity {
             callBack=null;
         }
     };
+
+    /**
+     * Fragment的view加载完成后回调
+     */
+    public void allowBindService() {
+        bindService(new Intent(this, LocalMusicService.class), localplayServiceConnection,
+                Context.BIND_AUTO_CREATE);
+    }
+
+    /**
+     * fragment的view消失后回调
+     */
+    public void allowUnbindService() {
+        unbindService(localplayServiceConnection);
+    }
+
     private void registerReceiver() {
         IntentFilter filter = new IntentFilter(Intent.ACTION_MEDIA_SCANNER_STARTED);
         filter.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
@@ -121,6 +137,8 @@ public class MainActivity extends FragmentActivity {
 
         return callBack;
     }
+
+
     /**
      * 初始化页卡游标
      */

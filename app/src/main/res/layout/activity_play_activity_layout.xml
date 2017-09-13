@@ -2,8 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#3cc1b4"
-    >
+    xmlns:toolbar="http://schemas.android.com/apk/res-auto"
+    android:background="#3cc1b4">
 
     <LinearLayout
         android:id="@+id/play_pre_listtt"
@@ -100,37 +100,53 @@
             android:scaleType="centerInside"
             android:layout_centerHorizontal="true"/>-->
 
-    <TextView
-        android:id="@+id/musicTitle"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/tools"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:ellipsize="marquee"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:gravity="center_horizontal"
-        android:lines="1"
-        android:marqueeRepeatLimit="marquee_forever"
-        android:singleLine="true"
-        android:text="歌曲"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@android:color/white" />
+        android:layout_marginBottom="10dp"
+        android:paddingLeft="10dp" >
 
-    <TextView
-        android:id="@+id/musicArtist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/musicTitle"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="15dp"
-        android:text="歌手"
-        android:textColor="#0F0"
-        android:textSize="18sp" />
+        <ImageView
+            android:id="@+id/iv_play_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/ic_action_back" />
+
+        <TextView
+            android:id="@+id/musicTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center_horizontal"
+            android:lines="1"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:text="歌曲"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white" />
+        <TextView
+            android:id="@+id/musicArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/musicTitle"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="5dp"
+            android:text="歌手"
+            android:textColor="#0F0"
+            android:textSize="18sp" />
+    </RelativeLayout>
+
     <oyh.ccmusic.adapter.LrcView
         android:id="@+id/lrcShowView"
         android:layout_width="300dp"
         android:layout_height="180dp"
-        android:layout_below="@+id/musicArtist"
+        android:layout_below="@+id/tools"
         android:layout_marginTop="40dp"
         android:scaleType="centerInside"
         android:layout_centerHorizontal="true" />
