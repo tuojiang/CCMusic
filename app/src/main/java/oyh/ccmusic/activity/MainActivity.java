@@ -3,13 +3,17 @@ package oyh.ccmusic.activity;
 import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -36,7 +40,7 @@ import oyh.ccmusic.util.MusicUtils;
 /**
  * Created by yihong.ou on 17-9-7.
  */
-public class MainActivity extends BaseActivity {
+public class MainActivity extends FragmentActivity {
 
     private TextView localMTextview;
     private TextView netMTextview;
@@ -68,6 +72,8 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+        bindService(new Intent(this, LocalMusicService.class), localplayServiceConnection,
+                Context.BIND_AUTO_CREATE);
         //初始化TextView
         InitTextView();
 
@@ -86,9 +92,21 @@ public class MainActivity extends BaseActivity {
         //注册广播
         registerReceiver();
 
-        MusicUtils.initMusicList();
+//        MusicUtils.initMusicList();
 
     }
+    private LocalMusicService.CallBack callBack;
+    private ServiceConnection localplayServiceConnection=new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder service) {
+            callBack= (LocalMusicService.CallBack) service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            callBack=null;
+        }
+    };
     private void registerReceiver() {
         IntentFilter filter = new IntentFilter(Intent.ACTION_MEDIA_SCANNER_STARTED);
         filter.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
@@ -100,6 +118,7 @@ public class MainActivity extends BaseActivity {
      * @return
      */
     public LocalMusicService.CallBack getLocalMusicService() {
+
         return callBack;
     }
     /**
@@ -157,7 +176,7 @@ public class MainActivity extends BaseActivity {
      * 初始化Fragment
      */
     private void InitFragment() {
-        MusicUtils.initMusicList();
+        //MusicUtils.initMusicList();
         fragmentArrayList=new ArrayList<>();
         fragmentArrayList.add(new LocalMusicFragment());
         fragmentArrayList.add(new NetMusicFragment());
@@ -277,7 +296,7 @@ public class MainActivity extends BaseActivity {
     private BroadcastReceiver mScanSDCardReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(Intent.ACTION_MEDIA_SCANNER_FINISHED)) {
-                MusicUtils.initMusicList();
+//                MusicUtils.initMusicList();
                 Log.e("MainActivity","receiver");
                 ((LocalMusicFragment)fragmentArrayList.get(0)).onMusicListChanged();
                 Log.e("MainActivity","receiver"+fragmentArrayList.size());

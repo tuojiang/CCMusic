@@ -2,6 +2,7 @@ package oyh.ccmusic.adapter;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -18,6 +19,7 @@ import oyh.ccmusic.util.MusicUtils;
  * Created by yihong.ou on 17-9-7.
  */
 public class LocalMusicListAdapter extends BaseAdapter {
+    private static final String TAG = "LocalMusicListAdapter";
     private int mPlayingPosition;
 
     public LocalMusicListAdapter() {
@@ -47,6 +49,7 @@ public class LocalMusicListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        Log.d(TAG, "LocalMusicListAdapter count: " + getCount());
         ViewHolder viewHolder= null;
         if (convertView == null) {
             convertView = View.inflate(AppliContext.sContext, R.layout.local_music_item, null);

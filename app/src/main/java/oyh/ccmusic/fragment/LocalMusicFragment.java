@@ -2,31 +2,37 @@ package oyh.ccmusic.fragment;
 
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Service;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.icu.text.SimpleDateFormat;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
+import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import oyh.ccmusic.R;
 import oyh.ccmusic.activity.MainActivity;
+import oyh.ccmusic.activity.PlayActivity;
 import oyh.ccmusic.adapter.LocalMusicListAdapter;
 import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
@@ -38,21 +44,29 @@ import oyh.ccmusic.util.MusicUtils;
 /**
  * 本地列表fragment
  */
-public class LocalMusicFragment extends Fragment {
+@TargetApi(Build.VERSION_CODES.N)
+public class LocalMusicFragment extends Fragment implements View.OnClickListener{
     private LrcProcess mLrcProcess; //歌词处理
     private ArrayList<LrcContent> lrcList = new ArrayList<>(); //存放歌词列表对象
-    private int currentPos;         // 记录当前正在播放的音乐
+    private int currentPos=0;         // 记录当前正在播放的音乐
     public LrcView lrcView; // 自定义歌词视图
     private MainActivity mActivity;
+    private int mProgress;      //进度条
     private ListView mListView;
-    private SeekBar seekBar;
+    private ImageView mIcon;
+    private static SeekBar seekBar;
     private TextView mTitleTextView;
     private TextView mArtTextView;
+    private static TextView currentTimeTxt;
+    private static TextView totalTimeTxt;
+    private boolean mFlag = true;
+    private Timer timer;
+    private boolean isSeekBarChanging;
     private ImageView mIcoImageView;
     private Button nextBtn;
-    private Button playBtn;
+    private ImageButton playBtn;
     private Button preBtn;
-    private Handler mHandler = new Handler();
+    private static SimpleDateFormat format = new SimpleDateFormat("mm:ss");
     private ArrayList<Music> mMediaLists = new ArrayList<>();
     private LocalMusicListAdapter adapter= new LocalMusicListAdapter();
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -77,13 +91,14 @@ public class LocalMusicFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-//        mActivity.allowBindService();
     }
 
+
     @Override
-    public void onStop() {
-        super.onStop();
-        mActivity.allowUnbindService();
+    public void onDestroy() {
+        super.onDestroy();
+        timer.cancel();
+        timer = null;
     }
 
     @Override
@@ -91,6 +106,7 @@ public class LocalMusicFragment extends Fragment {
                              Bundle savedInstanceState) {
         View layout=inflater.inflate(R.layout.fragment_local_music_list, null);
         setupViews(layout);
+//        forSeekBar();
         return layout;
     }
 
@@ -106,10 +122,38 @@ public class LocalMusicFragment extends Fragment {
         nextBtn=layout.findViewById(R.id.next_btn);
         playBtn=layout.findViewById(R.id.play_btn);
         preBtn=layout.findViewById(R.id.pre_btn);
-
+        mIcon=layout.findViewById(R.id.music_list_icon);
+        currentTimeTxt = layout.findViewById(R.id.played_time);
+        totalTimeTxt = layout.findViewById(R.id.duration_time);
         mListView.setOnItemClickListener(mMusicItemClickListener);
         mListView.setAdapter(adapter);
+        seekBar.setOnSeekBarChangeListener(new MySeekBar());
+        playBtn.setOnClickListener(this);
+        nextBtn.setOnClickListener(this);
+        preBtn.setOnClickListener(this);
+        mIcon.setOnClickListener(this);
+    }
+    /**
+     * 进度条处理
+     */
+    public class MySeekBar implements SeekBar.OnSeekBarChangeListener {
 
+        public void onProgressChanged(SeekBar seekBar, int progress,
+                                      boolean fromUser) {
+        }
+
+        /*滚动时,应当暂停后台定时器*/
+        public void onStartTrackingTouch(SeekBar seekBar) {
+            isSeekBarChanging = true;
+        }
+        /*滑动结束后，重新设置值*/
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            isSeekBarChanging = false;
+            if (mActivity.getLocalMusicService() != null) {
+                mProgress = seekBar.getProgress();
+                mActivity.getLocalMusicService().isSeekto(mProgress);
+            }
+        }
     }
 
     /**
@@ -119,32 +163,81 @@ public class LocalMusicFragment extends Fragment {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position,
                                 long id) {
-            playSong(position);
+                play(position);
         }
     };
 
     /**
-     * 播放歌曲的刷新面板
+     * 播放点击歌曲并保存当前位置值
      * @param position
      */
-    private void playSong(int position) {
-        Intent intent = new Intent(mActivity, LocalMusicService.class);
-        intent.putExtra("CURRENT_POSITION", position);
-        mActivity.allowBindService();
-        updatePanel(position);
+    private void play(int position) {
+        int pos=mActivity.getLocalMusicService().play(position);
+        currentPos=position;
+        updatePanel(pos);
+
     }
 
     /**
-     * 更新面板的信息
+     * 更新播放歌曲面板
      * @param position
      */
     private void updatePanel(int position) {
         if (MusicUtils.sMusicList.isEmpty()||position<0) return;
-        seekBar.setMax(mActivity.getLocalMusicService().callTotalDate());
-
+        int totalTime=mActivity.getLocalMusicService().callTotalDate();
+        int currentTime = mActivity.getLocalMusicService().callCurrentTime();
+        seekBar.setMax(totalTime);
+        seekBar.setProgress(currentTime);
+        String current = format .format(new Date(currentTime));
+        String total = format.format(new Date(totalTime));
+        Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(position).getImage());
+        mIcon.setImageBitmap(icon);
+        currentTimeTxt.setText(current);
+        totalTimeTxt.setText(total);
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if(!isSeekBarChanging){
+                    //TODO 进度条走动时间更新
+                    seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
+                }
+            }
+        },0,100);
+        if (mActivity.getLocalMusicService().isPlayering()) {
+            playBtn.setImageResource(android.R.drawable.ic_media_pause);
+        } else {
+            playBtn.setImageResource(R.drawable.list_action_play);
+        }
     }
 
     public void onMusicListChanged() {
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.play_btn:
+                if (mActivity.getLocalMusicService().isPlayering()) {
+                    mActivity.getLocalMusicService().pause();
+                    playBtn.setImageResource(R.drawable.list_action_play);
+                } else {
+                    play(currentPos); // 播放
+                }
+                break;
+            case R.id.pre_btn:
+                mActivity.getLocalMusicService().isPlayPre();
+                break;
+            case R.id.next_btn:
+                mActivity.getLocalMusicService().isPlayNext();
+                break;
+
+            case R.id.music_list_icon:
+            Intent intent = new Intent(mActivity,PlayActivity.class);
+            intent.putExtra("CURRENT_POSITION", currentPos);
+            startActivity(intent);
+                break;
+        }
     }
 }

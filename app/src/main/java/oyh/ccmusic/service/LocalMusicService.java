@@ -6,8 +6,11 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.RemoteException;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ public class LocalMusicService extends Service{
         boolean isPlayerMusic();
         int callTotalDate();
         int callCurrentTime();
+        int play(int position);
         void isSeekto(int m_send);
         void isPlayPre();
         void shPlayPre();
@@ -55,8 +59,11 @@ public class LocalMusicService extends Service{
         int lrcIndex();
         String getTitle();
         String getArtist();
+        int pause();
+
     }
 
+    //private MyBinder mBinder = new MyBinder();
     public class MyBinder extends Binder implements CallBack{
         /**
          * 播放音乐
@@ -93,6 +100,14 @@ public class LocalMusicService extends Service{
             }
         }
 
+        @Override
+        public int play(int position) {
+            currentPos = position;
+            initMusic();
+            playerMusic();
+            return currentPos;
+        }
+
         /**
          * 进度条拖动
          * @param m_send
@@ -104,6 +119,11 @@ public class LocalMusicService extends Service{
             }
         }
 
+        @Override
+        protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+            return super.onTransact(code, data, reply, flags);
+        }
+
         /**
          * 播放上一首
          */
@@ -112,7 +132,7 @@ public class LocalMusicService extends Service{
             if (--currentPos<0){
                 currentPos=0;
             }
-            playerMusic();
+            play(currentPos);
         }
 
         /**
@@ -274,6 +294,15 @@ public class LocalMusicService extends Service{
         public String getArtist() {
             return null;
         }
+
+        @Override
+        public int pause() {
+                if(!isPlayering()) return -1;
+                mPlayer.pause();
+                return currentPos;
+        }
+
+
     }
     /**
      * 随机播放
@@ -369,9 +398,9 @@ public class LocalMusicService extends Service{
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        currentPos = intent.getIntExtra("CURRENT_POSITION", 0);
+//        currentPos = intent.getIntExtra("CURRENT_POSITION", 0);
         initMusic();
-        playerMusic();
+//        playerMusic();
 
 
         return super.onStartCommand(intent, flags, startId);
@@ -381,13 +410,16 @@ public class LocalMusicService extends Service{
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d("LocalMusicService", "onCreate");
         mPlayer = new MediaPlayer();
-        MusicUtils.initMusicList();
+        //MusicUtils.initMusicList(this);
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d("LocalMusicService", "onBind");
         return new MyBinder();
     }
+
 }

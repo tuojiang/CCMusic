@@ -1,5 +1,6 @@
 package oyh.ccmusic.util;
 
+import android.content.Context;
 import android.os.Environment;
 
 import java.io.File;
@@ -19,11 +20,10 @@ public class MusicUtils {
     /**
      * 初始化歌曲列表
      */
-    public static void initMusicList() {
+    public static void initMusicList(Context context) {
         // 获取歌曲列表
         sMusicList.clear();
-        sMusicList.addAll(LocalMusicUtils.queryMusic(Environment.getExternalStorageDirectory() + File.separator));
-
+        sMusicList.addAll(LocalMusicUtils.getInstance(context).queryMusic(Environment.getExternalStorageDirectory().getAbsolutePath()));
     }
     /**
      * 获取sd卡路径
@@ -31,12 +31,12 @@ public class MusicUtils {
      */
     public static String getBaseDir() {
         String dir = null;
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_UNMOUNTED)) {
-            dir = Environment.getExternalStorageDirectory() + File.separator;
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            dir = Environment.getExternalStorageDirectory().getAbsolutePath();
         } else {
-            dir = AppliContext.sContext.getFilesDir() + File.separator;
+            //dir = AppliContext.sContext.getFilesDir() + File.separator;
+            dir = null;
         }
-
         return dir;
     }
 }

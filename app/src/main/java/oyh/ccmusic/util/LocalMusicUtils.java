@@ -1,5 +1,6 @@
 package oyh.ccmusic.util;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
+import oyh.ccmusic.service.LocalMusicService;
 
 /**
  * 本地音乐列表工具类
@@ -19,12 +21,29 @@ public class LocalMusicUtils {
      * 获取目录下的歌曲
      * @param dirName
      */
-    public static ArrayList<Music> queryMusic(String dirName) {
+    private Context mContext;
+    private static LocalMusicUtils mInstance;
+    private LocalMusicUtils(Context context) {
+        mContext = context;
+    }
+
+    public static LocalMusicUtils getInstance(Context context) {
+        if (mInstance == null) {
+            synchronized (LocalMusicUtils.class) {
+                if (mInstance == null) {
+                    mInstance = new LocalMusicUtils(context);
+                }
+            }
+        }
+        return  mInstance;
+    }
+
+    public ArrayList<Music> queryMusic(String path) {
         ArrayList<Music> results = new ArrayList<Music>();
-        Cursor cursor = MainActivity.context.getContentResolver().query(
+        Cursor cursor = mContext.getContentResolver().query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null,
                 MediaStore.Audio.Media.DATA + " like ?",
-                new String[]{dirName + "%"},
+                new String[]{path + "%"},
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
 
         if (cursor == null) return results;
@@ -58,7 +77,7 @@ public class LocalMusicUtils {
      * @param artist
      * @return
      */
-    private static boolean isRepeat(String title, String artist) {
+    private boolean isRepeat(String title, String artist) {
         for (Music music : MusicUtils.sMusicList) {
             if (title.equals(music.getTitle()) && artist.equals(music.getArtist())) {
                 return true;
@@ -71,7 +90,7 @@ public class LocalMusicUtils {
      * @param albumId
      * @return
      */
-    private static String getAlbumImage(int albumId) {
+    private String getAlbumImage(int albumId) {
         String result = "";
         Cursor cursor = null;
         try {

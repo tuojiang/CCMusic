@@ -7,4 +7,5 @@
     <string name="localmusic">本地列表</string>
     <string name="netmusic">网络列表</string>
     <string name="mylovemusic">我喜欢的</string>
+    <string name="title_activity_main2">Main2Activity</string>
 </resources>
