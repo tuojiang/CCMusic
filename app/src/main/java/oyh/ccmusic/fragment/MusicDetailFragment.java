@@ -3,29 +3,39 @@ package oyh.ccmusic.fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import oyh.ccmusic.R;
+import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
+import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
+import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 import oyh.ccmusic.util.MusicUtils;
 
@@ -36,12 +46,12 @@ import oyh.ccmusic.util.MusicUtils;
 public class MusicDetailFragment extends Fragment implements View.OnClickListener{
     private ImageButton bt_play, bt_pre, bt_next;
     private SeekBar seekBar;
+    private MyHandler mHandler = new MyHandler();
     private SimpleDateFormat format = new SimpleDateFormat("mm:ss");
     private TextView currentTimeTxt, totalTimeTxt;
     private TextView mMusicTitle,mMusicArtist;
     private int currentPosition;
     private String currentProgress;
-//    private MyHandler mHandler = new MyHandler(this);
     private ImageView coverImage;
     private boolean mFlag = true;
     private ArrayList<Music> musicBeanList = new ArrayList<>();
@@ -56,13 +66,72 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
     public LrcView lrcView; // 自定义歌词视图
     private String url; // 歌曲路径
     private MainActivity mainActivity;
+    private LrcProcess mLrcProcess; //歌词处理
     private static int ORDERMODE=0;
     private static int SHUFFLEMODE=1;
     private static int REPEATMODE=2;
     //    默认播放模式为顺序播放
     private static int CURRENTMODE=ORDERMODE;
+//    private Handler mHandler = new Handler();
+    public ArrayList<LrcContent> mLrcList;//存放歌词列表对象
     private IntentFilter intentFilter;
-    private TextView testLrc;
+    private MyReceiver receiver;
+    public class MyReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+//            mLrcList =  intent.getParcelableArrayListExtra("LRC_LIST");
+            //转换为list集合
+            lrcView.setmLrcList(mLrcList);
+            lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity,R.anim.alpha_z));
+            mHandler.post(mRunnable);
+            Log.e("MusicDetalFragment","MyReceiver");
+
+        }
+    }
+
+    private  class MyHandler extends Handler {
+
+        @Override
+        public void handleMessage(Message msg) {
+            currentPosition= (int) MusicUtils.get(mActivity, "position", 0);
+            /** 接收音乐列表资源 */
+            Music music= MusicUtils.sMusicList.get(currentPosition);
+            mMusicTitle.setText(music.getTitle());
+            mMusicArtist.setText(music.getArtist());
+            int totalTime=music.getLength();
+            seekBar.setMax(music.getLength());
+            String total = format.format(new Date(totalTime));
+            totalTimeTxt.setText(total);
+            currentTimeTxt.setText(currentProgress);
+            if (mLrcList==null) {
+                mLrcProcess = new LrcProcess();
+                //读取歌词文件
+                mLrcProcess.readLRC(MusicUtils.sMusicList.get(currentPosition).getMusicPath());
+                //传回处理后的歌词文件
+                mLrcList = (ArrayList<LrcContent>) mLrcProcess.getLrcList();
+                lrcView.setmLrcList(mLrcList);
+                lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                mHandler.post(mRunnable);
+            }
+            seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
+        }
+
+    }
+
+    Runnable mRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            Log.e("MusicDetalFragment","mRunnable");
+            lrcView.setIndex(mActivity.getLocalMusicService().lrcIndex());
+            lrcView.invalidate();
+            //TODO  歌词序列需要完成解析
+            int a=mActivity.getLocalMusicService().lrcIndex();
+            Log.e("MusicDetailFragment","a"+String.valueOf(a));
+            mHandler.postDelayed(mRunnable, 100);
+        }
+    };
+
     public MusicDetailFragment() {
         // Required empty public constructor
     }
@@ -72,16 +141,42 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         super.onAttach(activity);
         mActivity = (MainActivity) activity;
     }
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View layout= inflater.inflate(R.layout.fragment_music_detail, container, false);
+        intentFilter=new IntentFilter();
+        intentFilter.addAction("yihong.lrc");
+        receiver=new MyReceiver();
+        mActivity.registerReceiver(receiver,intentFilter);
         initData(layout);
-        getMusInfoAndStService();
+//        getMusInfoAndStService();
+        seekTime();
         return layout;
     }
+    private void seekTime(){
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (mFlag) {
+                    if (mActivity.getLocalMusicService() != null) {
+                        mHandler.sendMessage(Message.obtain());
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }).start();
+
+    }
     /**
      * 初始化数据
      * @param view
@@ -143,26 +238,42 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
      * 进行数据处理
      */
     private void getMusInfoAndStService(){
-        /** 接收音乐列表资源 */
-        Music music= MusicUtils.sMusicList.get(currentPosition);
-        mMusicTitle.setText(music.getTitle());
-        mMusicArtist.setText(music.getArtist());
-        int totalTime=music.getLength();
-        seekBar.setMax(music.getLength());
-        String total = format.format(new Date(totalTime));
-        totalTimeTxt.setText(total);
-        currentTimeTxt.setText(currentProgress);
-        //TODO 歌词同步
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if(!isSeekBarChanging){
-                    seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
-                }
-            }
-        },0,100);
+        /**歌词处理*/
+//        currentPosition= (int) MusicUtils.get(mActivity, "position", 0);
+//
+//        if (mLrcList==null) {
+//            mLrcProcess = new LrcProcess();
+//            //读取歌词文件
+//            mLrcProcess.readLRC(MusicUtils.sMusicList.get(currentPosition).getMusicPath());
+//            //传回处理后的歌词文件
+//            mLrcList = (ArrayList<LrcContent>) mLrcProcess.getLrcList();
+            //转换为list集合
+//            lrcView.setmLrcList(mLrcList);
+//            lrcView.setAnimation(AnimationUtils.loadAnimation(AppliContext.sContext, R.anim.alpha_z));
+//        }
+//        /** 接收音乐列表资源 */
+//        Music music= MusicUtils.sMusicList.get(currentPosition);
+//        mMusicTitle.setText(music.getTitle());
+//        mMusicArtist.setText(music.getArtist());
+//        int totalTime=music.getLength();
+//        seekBar.setMax(music.getLength());
+//        String total = format.format(new Date(totalTime));
+//        totalTimeTxt.setText(total);
+//        currentTimeTxt.setText(currentProgress);
+//        //TODO 歌词同步
+//        timer = new Timer();
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                if(!isSeekBarChanging){
+//                    seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
+//                }
+////                lrcView.setAnimation(AnimationUtils.loadAnimation(AppliContext.sContext, R.anim.alpha_z));
+////                mHandler.post(mRunnable);
+//            }
+//        },0,100);
     }
+
     /**
      * 播放音乐通过Binder接口实现
      */

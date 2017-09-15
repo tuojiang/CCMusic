@@ -1,12 +1,18 @@
 package oyh.ccmusic.util;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
+import android.provider.SyncStateContract;
+import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import oyh.ccmusic.activity.AppliContext;
+import oyh.ccmusic.adapter.LrcProcess;
+import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 
 /**
@@ -16,7 +22,9 @@ import oyh.ccmusic.domain.Music;
 public class MusicUtils {
     // 存放歌曲列表
     public static ArrayList<Music> sMusicList = new ArrayList<>();
+//    public  List<LrcContent> mLrcList;//存放歌词列表对象
 
+    private static LrcProcess mLrcProcess; //歌词处理
     /**
      * 初始化歌曲列表
      */
@@ -38,5 +46,57 @@ public class MusicUtils {
             dir = null;
         }
         return dir;
+    }
+    /**
+     * 初始化歌词
+     */
+    public static ArrayList<LrcContent> initLrc(ArrayList<LrcContent> lrcList, int currentPos){
+        mLrcProcess = new LrcProcess();
+        //读取歌词文件
+        mLrcProcess.readLRC(MusicUtils.sMusicList.get(currentPos).getMusicPath());
+        //传回处理后的歌词文件
+        lrcList = (ArrayList<LrcContent>) mLrcProcess.getLrcList();
+//        lrcList= (ArrayList<LrcContent>) mLrcList;
+        Log.e("MusicUtils","initLrc"+lrcList.size());
+        return lrcList;
+    }
+
+    public static void put(final String key,final Object value) {
+        SharedPreferences sp = AppliContext.sContext.getSharedPreferences("position",
+                Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+
+        if(value instanceof Integer) {
+            editor.putInt(key, (Integer) value);
+        }else if(value instanceof Float) {
+            editor.putFloat(key, (Float) value);
+        }else if(value instanceof Boolean) {
+            editor.putBoolean(key, (Boolean) value);
+        }else if(value instanceof Long) {
+            editor.putLong(key, (Long) value);
+        }else {
+            editor.putString(key, (String) value);
+        }
+
+        editor.commit();
+    }
+
+    public static Object get(Context context, String key, Object defaultObject) {
+        SharedPreferences sp = AppliContext.sContext.getSharedPreferences("position",
+                Context.MODE_PRIVATE);
+
+        if (defaultObject instanceof String) {
+            return sp.getString(key, (String) defaultObject);
+        } else if (defaultObject instanceof Integer) {
+            return sp.getInt(key, (Integer) defaultObject);
+        } else if (defaultObject instanceof Boolean) {
+            return sp.getBoolean(key, (Boolean) defaultObject);
+        } else if (defaultObject instanceof Float) {
+            return sp.getFloat(key, (Float) defaultObject);
+        } else if (defaultObject instanceof Long) {
+            return sp.getLong(key, (Long) defaultObject);
+        }
+
+        return defaultObject;
     }
 }

@@ -103,8 +103,10 @@ public class LocalMusicService extends Service{
         @Override
         public int play(int position) {
             currentPos = position;
+            MusicUtils.put("position", position);
             initMusic();
             playerMusic();
+
             return currentPos;
         }
 
@@ -132,6 +134,7 @@ public class LocalMusicService extends Service{
             if (--currentPos<0){
                 currentPos=0;
             }
+            initLrc();
             play(currentPos);
         }
 
@@ -140,6 +143,7 @@ public class LocalMusicService extends Service{
          */
         @Override
         public void shPlayPre() {
+            initLrc();
             shuffleMusic();
             playerMusic();
         }
@@ -152,6 +156,7 @@ public class LocalMusicService extends Service{
             if (++currentPos>MusicUtils.sMusicList.size()-1){
                 currentPos=MusicUtils.sMusicList.size()-1;
             }
+            initLrc();
             initMusic();
             playerMusic();
         }
@@ -161,6 +166,7 @@ public class LocalMusicService extends Service{
          */
         @Override
         public void shPlayNext() {
+            initLrc();
             shuffleMusic();
             playerMusic();
         }
@@ -183,6 +189,7 @@ public class LocalMusicService extends Service{
          */
         @Override
         public void currentList() {
+            initLrc();
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
@@ -201,6 +208,7 @@ public class LocalMusicService extends Service{
          */
         @Override
         public void toggleShuffle() {
+            initLrc();
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
                 @Override
@@ -217,6 +225,7 @@ public class LocalMusicService extends Service{
          */
         @Override
         public void cycleRepeat() {
+            initLrc();
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 
                 @Override
@@ -334,6 +343,7 @@ public class LocalMusicService extends Service{
         }
 
     }
+
     /**
      * 单曲播放
      */
@@ -377,6 +387,7 @@ public class LocalMusicService extends Service{
                         currentPos=0;
                     }
                     initMusic();
+                    myBinder.initLrc();
                     playerMusic();
                 }
             });
@@ -400,6 +411,7 @@ public class LocalMusicService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 //        currentPos = intent.getIntExtra("CURRENT_POSITION", 0);
+        myBinder.initLrc();
         initMusic();
 //        playerMusic();
 
@@ -413,7 +425,6 @@ public class LocalMusicService extends Service{
         super.onCreate();
         Log.d("LocalMusicService", "onCreate");
         mPlayer = new MediaPlayer();
-        //MusicUtils.initMusicList(this);
     }
 
     @Nullable

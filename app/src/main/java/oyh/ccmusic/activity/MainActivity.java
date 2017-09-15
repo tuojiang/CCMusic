@@ -76,6 +76,7 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
         bindService(new Intent(this, LocalMusicService.class), localplayServiceConnection,
                 Context.BIND_AUTO_CREATE);
+
         //初始化TextView
         InitTextView();
 

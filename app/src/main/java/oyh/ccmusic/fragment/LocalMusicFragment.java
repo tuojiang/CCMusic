@@ -49,7 +49,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private int currentPlayTime=0;
     public LrcView lrcView; // 自定义歌词视图
     private MainActivity mActivity;
-    private PlayActivity mPlayActivity;
     private int mProgress;      //进度条
     private ListView mListView;
     private ImageView mIcon;
