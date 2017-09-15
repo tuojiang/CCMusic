@@ -2,8 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:toolbar="http://schemas.android.com/apk/res-auto"
-    android:background="#3cc1b4">
+    android:background="#ab5b51">
 
     <LinearLayout
         android:id="@+id/play_pre_listtt"
@@ -87,9 +86,7 @@
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/current_time_txt"
             android:layout_toLeftOf="@id/total_time_txt"
-            android:layout_centerVertical="true"
-            android:progressDrawable="@drawable/abc_seekbar_track_material"
-            android:thumb="@drawable/abc_seekbar_thumb_material"/>
+            android:layout_centerVertical="true"/>
     </RelativeLayout>
     <!--    <ImageView
             android:id="@+id/coverImage"

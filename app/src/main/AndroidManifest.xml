@@ -38,7 +38,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.MainActivity" />
-        <activity android:name=".activity.PlayActivity"/>
+
         <service android:name=".service.LocalMusicService"/>
     </application>
 

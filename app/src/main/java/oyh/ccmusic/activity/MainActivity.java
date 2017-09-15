@@ -26,6 +26,7 @@ import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -45,7 +46,8 @@ public class MainActivity extends FragmentActivity {
     private TextView localMTextview;
     private TextView netMTextview;
     private TextView myloveMTextview;
-
+    public LinearLayout linearLayout;
+    public LinearLayout linearLayout1;
     private ImageView cursor;
     //图片偏移量
     private int offset = 0;
@@ -201,14 +203,21 @@ public class MainActivity extends FragmentActivity {
         fragmentArrayList.add(new MloveMusicFragment());
         fragmentManager=getSupportFragmentManager();
     }
+    public void Visiable(){
+        linearLayout.setVisibility(View.GONE);
+        linearLayout1.setVisibility(View.GONE);
+    }
     /**
      * 初始化标题栏
      */
     private void InitTextView() {
+        linearLayout=findViewById(R.id.linearLayout1);
+        linearLayout1=findViewById(R.id.linearLayout2);
         context=getApplicationContext();
         localMTextview= (TextView) findViewById(R.id.localmusic_tv);
         netMTextview= (TextView) findViewById(R.id.netmusic_tv);
         myloveMTextview= (TextView) findViewById(R.id.mylovemusic_tv);
+
 
         localMTextview.setOnClickListener(new MyOnClickListener(0));
         netMTextview.setOnClickListener(new MyOnClickListener(1));
@@ -314,7 +323,6 @@ public class MainActivity extends FragmentActivity {
     private BroadcastReceiver mScanSDCardReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(Intent.ACTION_MEDIA_SCANNER_FINISHED)) {
-//                MusicUtils.initMusicList();
                 Log.e("MainActivity","receiver");
                 ((LocalMusicFragment)fragmentArrayList.get(0)).onMusicListChanged();
                 Log.e("MainActivity","receiver"+fragmentArrayList.size());

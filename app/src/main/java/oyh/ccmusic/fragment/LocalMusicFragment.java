@@ -4,13 +4,15 @@ package oyh.ccmusic.fragment;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +31,6 @@ import java.util.TimerTask;
 
 import oyh.ccmusic.R;
 import oyh.ccmusic.activity.MainActivity;
-import oyh.ccmusic.activity.PlayActivity;
 import oyh.ccmusic.adapter.LocalMusicListAdapter;
 import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
@@ -48,10 +49,14 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private int currentPlayTime=0;
     public LrcView lrcView; // 自定义歌词视图
     private MainActivity mActivity;
+    private PlayActivity mPlayActivity;
     private int mProgress;      //进度条
     private ListView mListView;
     private ImageView mIcon;
     private static SeekBar seekBar;
+    public SeekBar seekBarPlay;
+    public Message message;
+    public String currentProgress;
     private TextView mTitleTextView;
     private TextView mArtTextView;
     private static TextView currentTimeTxt;
@@ -62,6 +67,8 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private Button nextBtn;
     private ImageButton playBtn;
     private Button preBtn;
+    private FragmentManager fragmentManager;
+    private android.support.v4.app.FragmentTransaction transaction;
     private static SimpleDateFormat format = new SimpleDateFormat("mm:ss");
     private ArrayList<Music> mMediaLists = new ArrayList<>();
     private LocalMusicListAdapter adapter= new LocalMusicListAdapter();
@@ -102,7 +109,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
                              Bundle savedInstanceState) {
         View layout=inflater.inflate(R.layout.fragment_local_music_list, null);
         setupViews(layout);
-//        forSeekBar();
         return layout;
     }
 
@@ -137,9 +143,10 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         public void onProgressChanged(SeekBar seekBar, int progress,
                                       boolean fromUser) {
             mProgress = progress;
-            //更新播放时间
-            String current = format.format(new Date(mProgress));
-            currentTimeTxt.setText(current);
+            //更新播放时间0
+            currentProgress = format.format(new Date(mProgress));
+            currentTimeTxt.setText(currentProgress);
+            Log.e("Local",currentProgress);
         }
 
         /*滚动时,应当暂停后台定时器*/
@@ -192,7 +199,8 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         String current = format .format(new Date(currentTime));
         String total = format.format(new Date(totalTime));
         Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(position).getImage());
-        mIcon.setImageBitmap(icon);
+        mIcon.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
+                getResources(), R.mipmap.img) : icon);
         currentTimeTxt.setText(current);
         totalTimeTxt.setText(total);
         timer = new Timer();
@@ -200,11 +208,8 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             @Override
             public void run() {
                 if(!isSeekBarChanging){
-                    //TODO 进度条走动时间更新
-//                    int currentTime = mActivity.getLocalMusicService().callCurrentTime();
-//                    String current = format .format(new Date(currentTime));
-//                    currentTimeTxt.setText(current);
                     seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
+                    Log.e("Local","finish");
                 }
             }
         },0,100);
@@ -218,30 +223,42 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     public void onMusicListChanged() {
         adapter.notifyDataSetChanged();
     }
-
+    /**
+     * 播放音乐通过Callback对象实现
+     */
+    public void playerMusicByIBinder() {
+        boolean playerState = mActivity.getLocalMusicService().isPlayerMusic();
+        if (playerState) {
+            playBtn.setImageResource(R.drawable.player_btn_pause_normal);
+        } else {
+            playBtn.setImageResource(R.drawable.player_btn_play_normal);
+        }
+    }
     @Override
     public void onClick(View view) {
         switch (view.getId()){
             case R.id.play_btn:
-                if (mActivity.getLocalMusicService().isPlayering()) {
-                    mActivity.getLocalMusicService().pause();
-                    playBtn.setImageResource(R.drawable.list_action_play);
-                } else {
-                    play(currentPos); // 播放
-                }
+                playerMusicByIBinder();
                 break;
             case R.id.pre_btn:
                 mActivity.getLocalMusicService().isPlayPre();
                 break;
             case R.id.next_btn:
                 mActivity.getLocalMusicService().isPlayNext();
+                //TODO 下一曲的专辑封面没有更新
                 break;
 
             case R.id.music_list_icon:
-            Intent intent = new Intent(mActivity,PlayActivity.class);
-            intent.putExtra("CURRENT_POSITION", currentPos);
-//            intent.putExtra("TOTALTIME", currentPlayTime);
-            startActivity(intent);
+                mActivity.Visiable();
+                fragmentManager=getFragmentManager();
+                transaction = fragmentManager.beginTransaction();
+                MusicDetailFragment musicDetailFragment=new MusicDetailFragment();
+//                transaction.replace(R.id.music_detail_fragment,musicDetailFragment).commit();
+                transaction.add(R.id.music_detail_fragment,musicDetailFragment).commit();
+//            Intent intent = new Intent(mActivity,PlayActivity.class);
+//            intent.putExtra("CURRENT_PROGRESS", currentProgress);
+//            intent.putExtra("CURRENT_POSITION", currentPos);
+//            startActivity(intent);
                 break;
         }
     }

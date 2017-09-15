@@ -298,6 +298,7 @@ public class LocalMusicService extends Service{
         @Override
         public int pause() {
                 if(!isPlayering()) return -1;
+
                 mPlayer.pause();
                 return currentPos;
         }
