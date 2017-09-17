@@ -61,6 +61,7 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
     private ImageButton mRepeatSong;
     private ImageView mBack;
     private Timer timer;
+    private int index=0;
     private boolean isSeekBarChanging;
     private MainActivity mActivity;
     public LrcView lrcView; // 自定义歌词视图
@@ -103,16 +104,7 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
             String total = format.format(new Date(totalTime));
             totalTimeTxt.setText(total);
             currentTimeTxt.setText(currentProgress);
-            if (mLrcList==null) {
-                mLrcProcess = new LrcProcess();
-                //读取歌词文件
-                mLrcProcess.readLRC(MusicUtils.sMusicList.get(currentPosition).getMusicPath());
-                //传回处理后的歌词文件
-                mLrcList = (ArrayList<LrcContent>) mLrcProcess.getLrcList();
-                lrcView.setmLrcList(mLrcList);
-                lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
-                mHandler.post(mRunnable);
-            }
+
             seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
         }
 
@@ -123,11 +115,12 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         @Override
         public void run() {
             Log.e("MusicDetalFragment","mRunnable");
+//            mActivity.getLocalMusicService().initLrc();
             lrcView.setIndex(mActivity.getLocalMusicService().lrcIndex());
             lrcView.invalidate();
             //TODO  歌词序列需要完成解析
-            int a=mActivity.getLocalMusicService().lrcIndex();
-            Log.e("MusicDetailFragment","a"+String.valueOf(a));
+//            int a=mActivity.getLocalMusicService().lrcIndex();
+            Log.e("MusicDetailFragment","a"+String.valueOf(mActivity.getLocalMusicService().lrcIndex()));
             mHandler.postDelayed(mRunnable, 100);
         }
     };
@@ -152,8 +145,9 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         intentFilter.addAction("yihong.lrc");
         receiver=new MyReceiver();
         mActivity.registerReceiver(receiver,intentFilter);
+//        mLrcList=new ArrayList<>();
         initData(layout);
-//        getMusInfoAndStService();
+        getMusicLrc();
         seekTime();
         return layout;
     }
@@ -235,43 +229,16 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
     }
 
     /**
-     * 进行数据处理
+     * 进行歌词处理
      */
-    private void getMusInfoAndStService(){
+    private void getMusicLrc(){
         /**歌词处理*/
-//        currentPosition= (int) MusicUtils.get(mActivity, "position", 0);
-//
-//        if (mLrcList==null) {
-//            mLrcProcess = new LrcProcess();
-//            //读取歌词文件
-//            mLrcProcess.readLRC(MusicUtils.sMusicList.get(currentPosition).getMusicPath());
-//            //传回处理后的歌词文件
-//            mLrcList = (ArrayList<LrcContent>) mLrcProcess.getLrcList();
-            //转换为list集合
-//            lrcView.setmLrcList(mLrcList);
-//            lrcView.setAnimation(AnimationUtils.loadAnimation(AppliContext.sContext, R.anim.alpha_z));
-//        }
-//        /** 接收音乐列表资源 */
-//        Music music= MusicUtils.sMusicList.get(currentPosition);
-//        mMusicTitle.setText(music.getTitle());
-//        mMusicArtist.setText(music.getArtist());
-//        int totalTime=music.getLength();
-//        seekBar.setMax(music.getLength());
-//        String total = format.format(new Date(totalTime));
-//        totalTimeTxt.setText(total);
-//        currentTimeTxt.setText(currentProgress);
-//        //TODO 歌词同步
-//        timer = new Timer();
-//        timer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                if(!isSeekBarChanging){
-//                    seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
-//                }
-////                lrcView.setAnimation(AnimationUtils.loadAnimation(AppliContext.sContext, R.anim.alpha_z));
-////                mHandler.post(mRunnable);
-//            }
-//        },0,100);
+        currentPosition= (int) MusicUtils.get(mActivity, "position", 0);
+        mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition);
+        lrcView.setmLrcList(mLrcList);
+        lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+        mHandler.post(mRunnable);
+
     }
 
     /**

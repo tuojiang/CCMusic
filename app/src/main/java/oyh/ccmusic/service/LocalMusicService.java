@@ -60,7 +60,7 @@ public class LocalMusicService extends Service{
         String getTitle();
         String getArtist();
         int pause();
-
+        ArrayList<LrcContent> initLrcx(ArrayList<LrcContent> list,int index);
     }
 
     //private MyBinder mBinder = new MyBinder();
@@ -255,7 +255,19 @@ public class LocalMusicService extends Service{
             intent.setAction("yihong.lrc");
             sendBroadcast(intent);
         }
-
+        /**
+         * 初始化歌词
+         */
+        @Override
+        public ArrayList<LrcContent> initLrcx(ArrayList<LrcContent> list,int index) {
+            mLrcProcess = new LrcProcess();
+            //读取歌词文件
+            mLrcProcess.readLRC(MusicUtils.sMusicList.get(index).getMusicPath());
+            //传回处理后的歌词文件
+            lrcList = mLrcProcess.getLrcList();
+            list= (ArrayList<LrcContent>) lrcList;
+            return list;
+        }
         /**
          * 获取歌词位置
          * @return
@@ -311,6 +323,7 @@ public class LocalMusicService extends Service{
                 mPlayer.pause();
                 return currentPos;
         }
+
 
 
     }

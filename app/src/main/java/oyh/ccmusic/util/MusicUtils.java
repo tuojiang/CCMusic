@@ -15,6 +15,8 @@ import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 
+import static android.R.attr.duration;
+
 /**
  * 歌曲列表工具类
  * Created by yihong.ou on 17-9-7.
@@ -22,6 +24,7 @@ import oyh.ccmusic.domain.Music;
 public class MusicUtils {
     // 存放歌曲列表
     public static ArrayList<Music> sMusicList = new ArrayList<>();
+    public static int index = 0;          //歌词检索值
 //    public  List<LrcContent> mLrcList;//存放歌词列表对象
 
     private static LrcProcess mLrcProcess; //歌词处理
@@ -46,19 +49,6 @@ public class MusicUtils {
             dir = null;
         }
         return dir;
-    }
-    /**
-     * 初始化歌词
-     */
-    public static ArrayList<LrcContent> initLrc(ArrayList<LrcContent> lrcList, int currentPos){
-        mLrcProcess = new LrcProcess();
-        //读取歌词文件
-        mLrcProcess.readLRC(MusicUtils.sMusicList.get(currentPos).getMusicPath());
-        //传回处理后的歌词文件
-        lrcList = (ArrayList<LrcContent>) mLrcProcess.getLrcList();
-//        lrcList= (ArrayList<LrcContent>) mLrcList;
-        Log.e("MusicUtils","initLrc"+lrcList.size());
-        return lrcList;
     }
 
     public static void put(final String key,final Object value) {
@@ -99,4 +89,5 @@ public class MusicUtils {
 
         return defaultObject;
     }
+
 }
