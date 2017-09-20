@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -224,6 +225,11 @@ public class MainActivity extends FragmentActivity {
         netMTextview.setOnClickListener(new MyOnClickListener(1));
         myloveMTextview.setOnClickListener(new MyOnClickListener(2));
     }
+
+    public void onPopupWindowShown() {
+
+    }
+
     /**
      * 设置标题栏监听
      */

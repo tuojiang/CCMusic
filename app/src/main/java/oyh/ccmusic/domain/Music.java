@@ -8,7 +8,7 @@ import android.os.Parcelable;
  */
 public class Music implements Parcelable {
     private String musicName;
-    private String musicPath;
+    private String musicPath;//歌曲路径
     private String image; // icon
     private String artist; // 艺术家
     private int length; // 长度

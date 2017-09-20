@@ -6,6 +6,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,7 +14,10 @@ import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -23,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,6 +35,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import oyh.ccmusic.R;
+import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.adapter.LocalMusicListAdapter;
 import oyh.ccmusic.adapter.LrcProcess;
@@ -47,6 +53,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private ArrayList<LrcContent> lrcList = new ArrayList<>(); //存放歌词列表对象
     private int currentPos=0;         // 记录当前正在播放的音乐
     private int currentPlayTime=0;
+    private int currentAdd=0;
     public LrcView lrcView; // 自定义歌词视图
     private MainActivity mActivity;
     private int mProgress;      //进度条
@@ -63,6 +70,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private Timer timer;
     private boolean isSeekBarChanging;
     private ImageView mIcoImageView;
+    private Music music;
     private Button nextBtn;
     private ImageButton playBtn;
     private Button preBtn;
@@ -127,6 +135,9 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         currentTimeTxt = layout.findViewById(R.id.played_time);
         totalTimeTxt = layout.findViewById(R.id.duration_time);
         mListView.setOnItemClickListener(mMusicItemClickListener);
+//        mListView.setOnItemLongClickListener(mMusicItemLongClickListener);
+        registerForContextMenu(mListView);
+        mListView.setOnCreateContextMenuListener(mMusicContextMenuClickListener);
         mListView.setAdapter(adapter);
         seekBar.setOnSeekBarChangeListener(new MySeekBar());
         playBtn.setOnClickListener(this);
@@ -160,6 +171,31 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
                 mActivity.getLocalMusicService().isSeekto(mProgress);
             }
         }
+    }
+private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View.OnCreateContextMenuListener() {
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        MenuInflater inflator = new MenuInflater(mActivity);
+        inflator.inflate(R.menu.menu_pop, menu);
+    }
+};
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        currentAdd=((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
+        music=MusicUtils.sMusicList.get(currentAdd);
+        String title=music.getTitle();
+        switch (item.getItemId()) {
+            case R.id.add_list_menu:
+                Toast.makeText(mActivity,"add [ "+title+" ] to list",Toast.LENGTH_SHORT).show();
+                mActivity.getLocalMusicService().addplaylist(music);
+
+                break;
+            case R.id.del_list_menu:
+                Toast.makeText(mActivity,"delete [ "+title+" ] from list",Toast.LENGTH_SHORT).show();
+                break;
+        }
+        return true;
     }
 
     /**

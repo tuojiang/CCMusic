@@ -1,8 +1,11 @@
 package oyh.ccmusic.service;
 
 import android.app.Service;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -17,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import oyh.ccmusic.Provider.DBHelper;
+import oyh.ccmusic.Provider.PlayListContentProvider;
 import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
@@ -28,8 +33,11 @@ import oyh.ccmusic.util.MusicUtils;
  */
 public class LocalMusicService extends Service{
     private ArrayList<Music> musicPathLists;
+    private ArrayList<Music> musicplaylist;
+    private ContentResolver mResolver;
     private MediaPlayer mPlayer;
     private int currentPos;         // 记录当前正在播放的音乐
+    private int currentPlayPosition;         // 记录当前正在播放的音乐
     private int nextPlay;
     private LrcProcess mLrcProcess; //歌词处理
     private List<LrcContent> lrcList = new ArrayList<LrcContent>(); //存放歌词列表对象
@@ -60,6 +68,7 @@ public class LocalMusicService extends Service{
         String getTitle();
         String getArtist();
         int pause();
+        void addplaylist(Music music);
         ArrayList<LrcContent> initLrcx(ArrayList<LrcContent> list,int index);
     }
 
@@ -324,8 +333,42 @@ public class LocalMusicService extends Service{
                 return currentPos;
         }
 
+        @Override
+        public void addplaylist(Music music) {
+            addPlayListInner(music, true);
+        }
 
 
+
+
+    }
+
+    /**
+     * 添加歌曲到播放列表中
+     * @param music
+     * @param needplay
+     */
+    private void addPlayListInner(Music music,boolean needplay){
+        musicplaylist=new ArrayList<>();
+        if (musicplaylist.contains(music)){
+            return;
+        }
+        musicplaylist.add(0,music);
+
+        insertMusicItemToContentProvider(music);
+
+        if(needplay) {
+            //TODO   进行播放
+        }
+    }
+    private void insertMusicItemToContentProvider(Music music){
+        ContentValues cv = new ContentValues();
+        cv.put(DBHelper.NAME,music.getMusicName());
+        cv.put(DBHelper.ARTIST,music.getArtist());
+        cv.put(DBHelper.DURATION,music.getLength());
+        cv.put(DBHelper.ALBUM_URI,music.getImage());
+        cv.put(DBHelper.SONG_URI,music.getMusicPath());
+        Uri uri=mResolver.insert(PlayListContentProvider.CONTENT_SONGS_URI,cv);
     }
     /**
      * 随机播放
@@ -438,6 +481,7 @@ public class LocalMusicService extends Service{
         super.onCreate();
         Log.d("LocalMusicService", "onCreate");
         mPlayer = new MediaPlayer();
+        mResolver = getContentResolver();
     }
 
     @Nullable

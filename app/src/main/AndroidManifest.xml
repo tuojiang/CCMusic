@@ -39,7 +39,13 @@
         </activity>
         <activity android:name=".activity.MainActivity" />
 
-        <service android:name=".service.LocalMusicService"/>
+        <service android:name=".service.LocalMusicService" />
+
+        <provider
+            android:name=".Provider.PlayListContentProvider"
+            android:authorities="oyh.ccmusic.PlayListContentProvider"
+            android:enabled="true"
+            android:exported="true"></provider>
     </application>
 
 </manifest>
