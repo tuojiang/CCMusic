@@ -22,8 +22,10 @@ import static android.R.attr.duration;
  * Created by yihong.ou on 17-9-7.
  */
 public class MusicUtils {
-    // 存放歌曲列表
+    // 存放歌曲列表 sd
     public static ArrayList<Music> sMusicList = new ArrayList<>();
+    // 存放歌曲列表 数据库
+    public static ArrayList<Music> sMusicSQlList = new ArrayList<>();
     public static int index = 0;          //歌词检索值
 //    public  List<LrcContent> mLrcList;//存放歌词列表对象
 
@@ -35,6 +37,13 @@ public class MusicUtils {
         // 获取歌曲列表
         sMusicList.clear();
         sMusicList.addAll(LocalMusicUtils.getInstance(context).queryMusic(Environment.getExternalStorageDirectory().getAbsolutePath()));
+    }
+    /**
+     * 初始化我喜欢列表
+     */
+    public static void initMusicSQLList(Context context){
+//        sMusicSQlList.clear();
+        sMusicSQlList.addAll(LocalMusicUtils.getInstance(context).queryMusicSQL(sMusicSQlList));
     }
     /**
      * 获取sd卡路径

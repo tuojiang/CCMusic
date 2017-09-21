@@ -1,12 +1,18 @@
 package oyh.ccmusic.util;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
+import oyh.ccmusic.Provider.DBHelper;
+import oyh.ccmusic.Provider.PlayListContentProvider;
 import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
@@ -22,6 +28,7 @@ public class LocalMusicUtils {
      * @param dirName
      */
     private Context mContext;
+
     private static LocalMusicUtils mInstance;
     private LocalMusicUtils(Context context) {
         mContext = context;
@@ -54,7 +61,6 @@ public class LocalMusicUtils {
 
             String title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
             String artist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
-
             if (isRepeat(title, artist)) continue;
 
             music = new Music();
@@ -110,5 +116,29 @@ public class LocalMusicUtils {
         }
 
         return null == result ? null : result;
+    }
+
+    /**
+     * 查询本地数据库
+     * @return
+     * @param sMusicSQlList
+     */
+    public Collection<? extends Music> queryMusicSQL(ArrayList<Music> sMusicSQlList) {
+        sMusicSQlList = new ArrayList<Music>();
+        Cursor cursor = mContext.getContentResolver().query(PlayListContentProvider.CONTENT_SONGS_URI,null,null,null,null);
+
+        if (cursor == null) return sMusicSQlList;
+        while(cursor.moveToNext()) {
+            String musicPath = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.SONG_URI));
+            String image = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.ALBUM_URI));
+            String title = cursor.getString(cursor.getColumnIndex(DBHelper.NAME));
+            String artist = cursor.getString(cursor.getColumnIndexOrThrow(DBHelper.ARTIST));
+            long duration = cursor.getLong(cursor.getColumnIndexOrThrow(DBHelper.DURATION));
+            Music mMusic = new Music((int) duration,title,musicPath,image,artist);
+            sMusicSQlList.add(mMusic);
+        }
+
+        cursor.close();
+        return sMusicSQlList;
     }
 }

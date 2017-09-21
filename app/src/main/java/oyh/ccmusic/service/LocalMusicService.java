@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
@@ -69,6 +70,7 @@ public class LocalMusicService extends Service{
         String getArtist();
         int pause();
         void addplaylist(Music music);
+        void delplaylist(String name);
         ArrayList<LrcContent> initLrcx(ArrayList<LrcContent> list,int index);
     }
 
@@ -338,11 +340,23 @@ public class LocalMusicService extends Service{
             addPlayListInner(music, true);
         }
 
-
+        @Override
+        public void delplaylist(String name) {
+            dellPlayListInner(name);
+        }
 
 
     }
 
+    /**
+     * 从播放列表删除歌曲
+     * @param name
+     */
+    private void dellPlayListInner(String name){
+        Log.e("dellPlayListInner","name="+name);
+        int delete=mResolver.delete(PlayListContentProvider.CONTENT_SONGS_URI,"name=?",new String[] { name });
+
+    }
     /**
      * 添加歌曲到播放列表中
      * @param music
@@ -363,7 +377,7 @@ public class LocalMusicService extends Service{
     }
     private void insertMusicItemToContentProvider(Music music){
         ContentValues cv = new ContentValues();
-        cv.put(DBHelper.NAME,music.getMusicName());
+        cv.put(DBHelper.NAME,music.getTitle());
         cv.put(DBHelper.ARTIST,music.getArtist());
         cv.put(DBHelper.DURATION,music.getLength());
         cv.put(DBHelper.ALBUM_URI,music.getImage());

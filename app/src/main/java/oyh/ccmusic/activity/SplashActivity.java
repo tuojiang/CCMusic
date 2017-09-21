@@ -28,6 +28,8 @@ public class SplashActivity extends Activity {
         //启动后台播放服务
         //startService(new Intent(this, LocalMusicService.class));
         MusicUtils.initMusicList(this);
+//        MusicUtils.initMusicSQLList(this);
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

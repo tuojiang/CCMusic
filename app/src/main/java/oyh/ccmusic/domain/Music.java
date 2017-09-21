@@ -31,6 +31,14 @@ public class Music implements Parcelable {
         this.lrcSize = lrcSize;
     }
 
+    public Music(int length, String title, String url, String image, String artist) {
+        this.length = length;
+        this.title = title;
+        this.url = url;
+        this.image = image;
+        this.artist = artist;
+    }
+
     public Music() {
 
     }

@@ -10,6 +10,9 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.database.ContentObserver;
+import android.net.Uri;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -32,6 +35,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import oyh.ccmusic.Provider.PlayListContentProvider;
 import oyh.ccmusic.R;
 import oyh.ccmusic.adapter.MFragmentPagerAdapter;
 import oyh.ccmusic.fragment.LocalMusicFragment;
@@ -56,9 +60,9 @@ public class MainActivity extends FragmentActivity {
     private int position_two;
     //图片宽度
     private int bmpW;
-
+    private Handler mHand = null;
     private ViewPager mviewPager;
-
+    private ContentObserver mDatabaseListener = null;
     private int currentIndex;
     private ArrayList<Fragment> fragmentArrayList;
     private FragmentManager fragmentManager;
@@ -77,6 +81,8 @@ public class MainActivity extends FragmentActivity {
         setContentView(R.layout.activity_main);
         bindService(new Intent(this, LocalMusicService.class), localplayServiceConnection,
                 Context.BIND_AUTO_CREATE);
+        //初始化监听
+        observer();
 
         //初始化TextView
         InitTextView();
@@ -111,6 +117,44 @@ public class MainActivity extends FragmentActivity {
             callBack=null;
         }
     };
+    //TODO 更新mylove列表
+    /**
+     * 初始化监听
+     */
+    private void observer(){
+        mHand = new Handler();
+        // 数据库变动时的回调
+        mDatabaseListener = new ContentObserver(mHand) {
+            @Override
+            public boolean deliverSelfNotifications() {
+                return super.deliverSelfNotifications();
+            }
+
+            @Override
+            public void onChange(boolean selfChange) {
+                super.onChange(selfChange);
+                ((MloveMusicFragment)fragmentArrayList.get(2)).onMusicMyLoveListChanged();
+            }
+
+            @Override
+            public void onChange(boolean selfChange, Uri uri) {
+                super.onChange(selfChange, uri);
+                ((MloveMusicFragment)fragmentArrayList.get(2)).onMusicMyLoveListChanged();
+            }
+        };
+        // 注册数据库的监听，对应的是特定的Uri
+        getContentResolver().registerContentObserver(PlayListContentProvider.CONTENT_SONGS_URI, true, mDatabaseListener);
+        mHand.post(new Runnable()
+        {
+            public void run()
+            {
+                Log.e("MainActivity","receiver");
+                ((MloveMusicFragment)fragmentArrayList.get(2)).onMusicMyLoveListChanged();
+                Log.e("MainActivity","receiver"+fragmentArrayList.size());
+            }
+        });
+    }
+
 
     /**
      * Fragment的view加载完成后回调

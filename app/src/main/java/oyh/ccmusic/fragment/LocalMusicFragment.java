@@ -135,7 +135,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         currentTimeTxt = layout.findViewById(R.id.played_time);
         totalTimeTxt = layout.findViewById(R.id.duration_time);
         mListView.setOnItemClickListener(mMusicItemClickListener);
-//        mListView.setOnItemLongClickListener(mMusicItemLongClickListener);
         registerForContextMenu(mListView);
         mListView.setOnCreateContextMenuListener(mMusicContextMenuClickListener);
         mListView.setAdapter(adapter);
@@ -185,6 +184,7 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
         currentAdd=((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
         music=MusicUtils.sMusicList.get(currentAdd);
         String title=music.getTitle();
+
         switch (item.getItemId()) {
             case R.id.add_list_menu:
                 Toast.makeText(mActivity,"add [ "+title+" ] to list",Toast.LENGTH_SHORT).show();
@@ -193,6 +193,7 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
                 break;
             case R.id.del_list_menu:
                 Toast.makeText(mActivity,"delete [ "+title+" ] from list",Toast.LENGTH_SHORT).show();
+                mActivity.getLocalMusicService().delplaylist(title);
                 break;
         }
         return true;

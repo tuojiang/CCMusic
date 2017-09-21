@@ -24,6 +24,7 @@ public class PlayListContentProvider extends ContentProvider {
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase db=mDbHelper.getWritableDatabase();
         int count=db.delete(DBHelper.PLAYLIST_TABLE_NAME,selection,selectionArgs);
+        getContext().getContentResolver().notifyChange(uri,null);
         return count;
     }
 
@@ -40,6 +41,7 @@ public class PlayListContentProvider extends ContentProvider {
         if (id>0){
             result= ContentUris.withAppendedId(CONTENT_SONGS_URI,id);
         }
+        getContext().getContentResolver().notifyChange(uri,null);
         return result;
     }
 
