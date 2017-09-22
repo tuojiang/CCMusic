@@ -117,7 +117,6 @@ public class MainActivity extends FragmentActivity {
             callBack=null;
         }
     };
-    //TODO 更新mylove列表
     /**
      * 初始化监听
      */
@@ -133,13 +132,13 @@ public class MainActivity extends FragmentActivity {
             @Override
             public void onChange(boolean selfChange) {
                 super.onChange(selfChange);
-                ((MloveMusicFragment)fragmentArrayList.get(2)).onMusicMyLoveListChanged();
+                MusicUtils.removeMusicSQLList(AppliContext.sContext);
+                MusicUtils.initMusicSQLList(AppliContext.sContext);
             }
 
             @Override
             public void onChange(boolean selfChange, Uri uri) {
                 super.onChange(selfChange, uri);
-                ((MloveMusicFragment)fragmentArrayList.get(2)).onMusicMyLoveListChanged();
             }
         };
         // 注册数据库的监听，对应的是特定的Uri
@@ -148,9 +147,7 @@ public class MainActivity extends FragmentActivity {
         {
             public void run()
             {
-                Log.e("MainActivity","receiver");
-                ((MloveMusicFragment)fragmentArrayList.get(2)).onMusicMyLoveListChanged();
-                Log.e("MainActivity","receiver"+fragmentArrayList.size());
+
             }
         });
     }

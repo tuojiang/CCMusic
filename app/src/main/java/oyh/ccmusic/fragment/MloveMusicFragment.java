@@ -3,7 +3,9 @@ package oyh.ccmusic.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,12 +23,12 @@ import oyh.ccmusic.util.MusicUtils;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class MloveMusicFragment extends Fragment {
+public class MloveMusicFragment extends Fragment{
 
     private MainActivity mActivity;
     private ListView mListView;
-    private MyloveMusicListAdapter adapter=new MyloveMusicListAdapter();
-
+    private MyloveMusicListAdapter adapter;
+    private SwipeRefreshLayout swipeLayout;
     public MloveMusicFragment() {
     }
 
@@ -46,24 +48,14 @@ public class MloveMusicFragment extends Fragment {
                              Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.fragment_mlove_music, null);
         MusicUtils.initMusicSQLList(mActivity);
-        Log.e("MloveMusicFragment","onCreateView");
+        adapter=new MyloveMusicListAdapter(MusicUtils.sMusicSQlList);
         mListView=layout.findViewById(R.id.music_mllist_view);
         mListView.setOnItemClickListener(mMusicItemClickListener);
         mListView.setAdapter(adapter);
-
 //        setupViews(layout);
         return layout;
     }
 
-    /**
-     * 初始化界面
-     * @param layout
-     */
-    private void setupViews(View layout) {
-//        mListView=layout.findViewById(R.id.music_list_view);
-//        mListView.setOnItemClickListener(mMusicItemClickListener);
-//        mListView.setAdapter(adapter);
-    }
     /**
      * 监听歌曲点击事件
      */

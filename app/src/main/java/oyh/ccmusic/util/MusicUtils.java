@@ -46,6 +46,13 @@ public class MusicUtils {
         sMusicSQlList.addAll(LocalMusicUtils.getInstance(context).queryMusicSQL(sMusicSQlList));
     }
     /**
+     * 清空我喜欢列表
+     */
+    public static void removeMusicSQLList(Context context){
+        sMusicSQlList.clear();
+//        sMusicSQlList.addAll(LocalMusicUtils.getInstance(context).queryMusicSQL(sMusicSQlList));
+    }
+    /**
      * 获取sd卡路径
      * @return
      */

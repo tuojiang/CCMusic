@@ -1,6 +1,7 @@
 package oyh.ccmusic.adapter;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
@@ -12,6 +13,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import oyh.ccmusic.R;
@@ -26,14 +28,19 @@ import oyh.ccmusic.util.MusicUtils;
 public class MyloveMusicListAdapter extends BaseAdapter {
     private static final String TAG = "MyloveMusicListAdapter";
     private static SimpleDateFormat format = new SimpleDateFormat("mm:ss");
+    private ArrayList<Music> mMyLoveList;
+    public MyloveMusicListAdapter(ArrayList<Music> list) {
+            mMyLoveList=list;
+    }
+
     @Override
     public int getCount() {
-        return MusicUtils.sMusicSQlList.size();
+        return mMyLoveList==null? MusicUtils.sMusicSQlList.size():mMyLoveList.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return MusicUtils.sMusicSQlList.get(i);
+        return mMyLoveList==null?MusicUtils.sMusicSQlList.get(i):mMyLoveList.get(i);
     }
 
     @Override
