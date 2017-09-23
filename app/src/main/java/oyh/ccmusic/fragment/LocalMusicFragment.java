@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.INotificationSideChannel;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -245,7 +246,6 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
             public void run() {
                 if(!isSeekBarChanging){
                     seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
-                    Log.e("Local","finish");
                 }
             }
         },0,100);
@@ -290,7 +290,7 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
                 transaction = fragmentManager.beginTransaction();
                 MusicDetailFragment musicDetailFragment=new MusicDetailFragment();
 //                transaction.replace(R.id.music_detail_fragment,musicDetailFragment).commit();
-                transaction.add(R.id.music_detail_fragment,musicDetailFragment).commit();
+                transaction.add(R.id.music_detail_fragment,musicDetailFragment).addToBackStack(null).commit();
 //            Intent intent = new Intent(mActivity,PlayActivity.class);
 //            intent.putExtra("CURRENT_PROGRESS", currentProgress);
 //            intent.putExtra("CURRENT_POSITION", currentPos);

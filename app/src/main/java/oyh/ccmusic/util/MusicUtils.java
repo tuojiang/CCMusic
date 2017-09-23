@@ -27,7 +27,6 @@ public class MusicUtils {
     // 存放歌曲列表 数据库
     public static ArrayList<Music> sMusicSQlList = new ArrayList<>();
     public static int index = 0;          //歌词检索值
-//    public  List<LrcContent> mLrcList;//存放歌词列表对象
 
     private static LrcProcess mLrcProcess; //歌词处理
     /**
@@ -42,7 +41,6 @@ public class MusicUtils {
      * 初始化我喜欢列表
      */
     public static void initMusicSQLList(Context context){
-//        sMusicSQlList.clear();
         sMusicSQlList.addAll(LocalMusicUtils.getInstance(context).queryMusicSQL(sMusicSQlList));
     }
     /**
@@ -50,7 +48,6 @@ public class MusicUtils {
      */
     public static void removeMusicSQLList(Context context){
         sMusicSQlList.clear();
-//        sMusicSQlList.addAll(LocalMusicUtils.getInstance(context).queryMusicSQL(sMusicSQlList));
     }
     /**
      * 获取sd卡路径
@@ -67,11 +64,15 @@ public class MusicUtils {
         return dir;
     }
 
+    /**
+     * 存放播放位置
+     * @param key
+     * @param value
+     */
     public static void put(final String key,final Object value) {
         SharedPreferences sp = AppliContext.sContext.getSharedPreferences("position",
                 Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-
         if(value instanceof Integer) {
             editor.putInt(key, (Integer) value);
         }else if(value instanceof Float) {

@@ -5,12 +5,14 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -28,7 +30,8 @@ public class MloveMusicFragment extends Fragment{
     private MainActivity mActivity;
     private ListView mListView;
     private MyloveMusicListAdapter adapter;
-    private SwipeRefreshLayout swipeLayout;
+    private FragmentManager fragmentManager;
+    private android.support.v4.app.FragmentTransaction transaction;
     public MloveMusicFragment() {
     }
 
@@ -37,11 +40,6 @@ public class MloveMusicFragment extends Fragment{
         super.onAttach(context);
         mActivity= (MainActivity) getActivity();
     }
-    public void onMusicMyLoveListChanged() {
-        adapter.notifyDataSetChanged();
-    }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,8 +61,18 @@ public class MloveMusicFragment extends Fragment{
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position,
                                 long id) {
+            onPlay(position);
+            mActivity.Visiable();
+//            MusicUtils.put("mlposition", position);
+            fragmentManager=getFragmentManager();
+            transaction = fragmentManager.beginTransaction();
+            MusicMLDetailFragment musicMLDetailFragment=new MusicMLDetailFragment();
+            transaction.add(R.id.music_detail_fragment,musicMLDetailFragment).addToBackStack(null).commit();
             Toast.makeText(AppliContext.sContext,"pisition:"+position,Toast.LENGTH_LONG).show();
         }
     };
+    private void onPlay(int position){
+        mActivity.getLocalMusicService().play(position);
+    }
 
 }

@@ -38,7 +38,7 @@ public class LocalMusicService extends Service{
     private ContentResolver mResolver;
     private MediaPlayer mPlayer;
     private int currentPos;         // 记录当前正在播放的音乐
-    private int currentPlayPosition;         // 记录当前正在播放的音乐
+    private int currentMLPosition;         // 记录我喜欢列表当前正在播放的音乐
     private int nextPlay;
     private LrcProcess mLrcProcess; //歌词处理
     private List<LrcContent> lrcList = new ArrayList<LrcContent>(); //存放歌词列表对象
@@ -55,6 +55,10 @@ public class LocalMusicService extends Service{
         int callTotalDate();
         int callCurrentTime();
         int play(int position);
+        int next();
+        int pre();
+        void start();
+        int playMyLove(int position);
         void isSeekto(int m_send);
         void isPlayPre();
         void shPlayPre();
@@ -65,6 +69,7 @@ public class LocalMusicService extends Service{
         void toggleShuffle();
         void cycleRepeat();
         void initLrc();
+        void initLrcMlove();
         int lrcIndex();
         String getTitle();
         String getArtist();
@@ -72,6 +77,7 @@ public class LocalMusicService extends Service{
         void addplaylist(Music music);
         void delplaylist(String name);
         ArrayList<LrcContent> initLrcx(ArrayList<LrcContent> list,int index);
+        ArrayList<LrcContent> initLrcMlove(ArrayList<LrcContent> list,int index);
     }
 
     //private MyBinder mBinder = new MyBinder();
@@ -113,12 +119,83 @@ public class LocalMusicService extends Service{
 
         @Override
         public int play(int position) {
+//            currentPos = position;
+//            MusicUtils.put("position", position);
+//            initMusic();
+//            playerMusic();
+            if(position < 0) position = 0;
+            if(position >= MusicUtils.sMusicList.size()) position = MusicUtils.sMusicList.size() - 1;
+
+            try {
+                mPlayer.reset();
+                mPlayer.setDataSource(MusicUtils.sMusicList.get(position).getMusicPath());
+                mPlayer.prepare();
+
+                start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             currentPos = position;
             MusicUtils.put("position", position);
-            initMusic();
-            playerMusic();
 
             return currentPos;
+        }
+
+        @Override
+        public int next() {
+            if(currentPos >= MusicUtils.sMusicList.size() - 1) {
+                return play(0);
+            }
+            return play(currentPos + 1);
+        }
+
+        @Override
+        public int pre() {
+            if(currentPos <= 0) {
+                return play(MusicUtils.sMusicList.size() - 1);
+            }
+
+            return play(currentPos - 1);
+        }
+
+        /**
+         * 开始播放
+         */
+        @Override
+        public void start() {
+            mPlayer.start();
+        }
+
+        @Override
+        public int playMyLove(int position) {
+            currentMLPosition = position;
+            MusicUtils.put("mlposition", currentMLPosition);
+//            initMLMusic();
+            playerMusic();
+//            if(position < 0) position = 0;
+//            if(position >= MusicUtils.sMusicList.size()) position = MusicUtils.sMusicList.size() - 1;
+//
+//            try {
+//                mPlayer.reset();
+//                Log.e("playMyLove","reset");
+//                mPlayer.setDataSource(MusicUtils.sMusicSQlList.get(currentMLPosition).getMusicPath());
+//                Log.e("playMyLove","list="+MusicUtils.sMusicSQlList.get(currentMLPosition).getMusicPath());
+//
+//                mPlayer.prepare();
+//                Log.e("playMyLove","prepare");
+//
+//                mPlayer.start();
+//                Log.e("playMyLove","start");
+
+//                start();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+
+//            currentMLPosition = position;
+//            MusicUtils.put("mlposition", currentMLPosition);
+            return currentMLPosition;
         }
 
         /**
@@ -266,6 +343,19 @@ public class LocalMusicService extends Service{
             intent.setAction("yihong.lrc");
             sendBroadcast(intent);
         }
+
+        /**
+         * 初始化我喜欢列表歌词   currentMLPosition
+         */
+        @Override
+        public void initLrcMlove() {
+            mLrcProcess = new LrcProcess();
+            //读取歌词文件
+            mLrcProcess.readLRC(MusicUtils.sMusicSQlList.get(currentMLPosition).getMusicPath());
+            //传回处理后的歌词文件
+            lrcList = mLrcProcess.getLrcList();
+        }
+
         /**
          * 初始化歌词
          */
@@ -274,11 +364,26 @@ public class LocalMusicService extends Service{
             mLrcProcess = new LrcProcess();
             //读取歌词文件
             mLrcProcess.readLRC(MusicUtils.sMusicList.get(index).getMusicPath());
+            Log.e("init",MusicUtils.sMusicList.get(index).getMusicPath());
             //传回处理后的歌词文件
             lrcList = mLrcProcess.getLrcList();
             list= (ArrayList<LrcContent>) lrcList;
             return list;
         }
+        /**
+         * 初始化我喜欢列表歌词
+         */
+        @Override
+        public ArrayList<LrcContent> initLrcMlove(ArrayList<LrcContent> list, int index) {
+            mLrcProcess = new LrcProcess();
+            //读取歌词文件
+            mLrcProcess.readLRC(MusicUtils.sMusicSQlList.get(index).getMusicPath());
+            //传回处理后的歌词文件
+            lrcList = mLrcProcess.getLrcList();
+            list= (ArrayList<LrcContent>) lrcList;
+            return list;
+        }
+
         /**
          * 获取歌词位置
          * @return
@@ -353,7 +458,6 @@ public class LocalMusicService extends Service{
      * @param name
      */
     private void dellPlayListInner(String name){
-        Log.e("dellPlayListInner","name="+name);
         int delete=mResolver.delete(PlayListContentProvider.CONTENT_SONGS_URI,"name=?",new String[] { name });
 
     }
@@ -458,6 +562,31 @@ public class LocalMusicService extends Service{
                     }
                     initMusic();
                     myBinder.initLrc();
+                    playerMusic();
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    /**
+     * 初始化音乐数据
+     */
+    public void initMLMusic(){
+        mPlayer.reset();
+        try{
+            mPlayer.setDataSource(MusicUtils.sMusicSQlList.get(currentMLPosition).getMusicPath());
+            Log.e("service","initMLMusic"+MusicUtils.sMusicSQlList.size());
+            mPlayer.prepare();
+            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    currentMLPosition++;
+                    if (currentMLPosition>=MusicUtils.sMusicList.size()){
+                        currentMLPosition=0;
+                    }
+                    initMLMusic();
+//                    myBinder.initLrc();
                     playerMusic();
                 }
             });
