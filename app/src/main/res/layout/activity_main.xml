@@ -23,16 +23,25 @@
             android:textSize="@dimen/main_top_tab_text_size" />
 
         <TextView
-            android:id="@+id/netmusic_tv"
+            android:id="@+id/albummusic_tv"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:layout_weight="1.0"
             android:gravity="center"
-            android:text="@string/netmusic"
+            android:text="@string/albummusic"
             android:textStyle="bold"
             android:textColor="@color/main_top_tab_color"
             android:textSize="@dimen/main_top_tab_text_size" />
-
+        <TextView
+            android:id="@+id/artistmusic_tv"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="@string/artistmusic"
+            android:textStyle="bold"
+            android:textColor="@color/main_top_tab_color"
+            android:textSize="@dimen/main_top_tab_text_size" />
         <TextView
             android:id="@+id/mylovemusic_tv"
             android:layout_width="fill_parent"
@@ -40,6 +49,26 @@
             android:layout_weight="1.0"
             android:gravity="center"
             android:text="@string/mylovemusic"
+            android:textStyle="bold"
+            android:textColor="@color/main_top_tab_color"
+            android:textSize="@dimen/main_top_tab_text_size" />
+        <TextView
+            android:id="@+id/genresmusic_tv"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="@string/genresmusic"
+            android:textStyle="bold"
+            android:textColor="@color/main_top_tab_color"
+            android:textSize="@dimen/main_top_tab_text_size" />
+        <TextView
+            android:id="@+id/netmusic_tv"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:gravity="center"
+            android:text="@string/netmusic"
             android:textStyle="bold"
             android:textColor="@color/main_top_tab_color"
             android:textSize="@dimen/main_top_tab_text_size" />

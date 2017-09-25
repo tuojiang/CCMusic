@@ -119,6 +119,30 @@ public class LocalMusicUtils {
     }
 
     /**
+     * 获取流派信息
+     * @param audioId
+     * @return
+     */
+    public String getGenres(int audioId){
+        String result="";
+        Cursor cursor=null;
+        try{//TODO 流派信息获取
+            cursor=AppliContext.sContext.getContentResolver().query(Uri.parse("content://media/external/audio/media/" + audioId+ "/genres"),
+                    new String[]{android.provider.MediaStore.Audio.GenresColumns.NAME}, null, null, null);
+            for (cursor.moveToFirst();cursor.isAfterLast();){
+                result=cursor.getString(0);
+                break;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if (null!=cursor){
+                cursor.close();
+            }
+        }
+        return null == result ? null:result;
+    }
+    /**
      * 查询本地数据库
      * @return
      * @param sMusicSQlList

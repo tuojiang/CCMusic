@@ -4,8 +4,11 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="action_settings">Settings</string>
-    <string name="localmusic">本地列表</string>
-    <string name="netmusic">网络列表</string>
+    <string name="localmusic">歌曲</string>
+    <string name="netmusic">网络</string>
     <string name="mylovemusic">我喜欢的</string>
+    <string name="albummusic">专辑</string>
+    <string name="artistmusic">艺术家</string>
+    <string name="genresmusic">流派</string>
     <string name="title_activity_main2">Main2Activity</string>
 </resources>

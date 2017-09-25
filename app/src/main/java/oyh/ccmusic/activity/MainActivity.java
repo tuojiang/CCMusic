@@ -19,7 +19,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -27,7 +26,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -38,6 +36,9 @@ import java.util.ArrayList;
 import oyh.ccmusic.Provider.PlayListContentProvider;
 import oyh.ccmusic.R;
 import oyh.ccmusic.adapter.MFragmentPagerAdapter;
+import oyh.ccmusic.fragment.AlbumMusicFragment;
+import oyh.ccmusic.fragment.ArtistMusicFragment;
+import oyh.ccmusic.fragment.GenresMusicFragment;
 import oyh.ccmusic.fragment.LocalMusicFragment;
 import oyh.ccmusic.fragment.MloveMusicFragment;
 import oyh.ccmusic.fragment.NetMusicFragment;
@@ -51,6 +52,9 @@ public class MainActivity extends FragmentActivity {
     private TextView localMTextview;
     private TextView netMTextview;
     private TextView myloveMTextview;
+    private TextView albumTextview;
+    private TextView artistTextview;
+    private TextView genresTextview;
     public LinearLayout linearLayout;
     public LinearLayout linearLayout1;
     private ImageView cursor;
@@ -193,13 +197,16 @@ public class MainActivity extends FragmentActivity {
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         // 获取分辨率宽度
         int screenW = dm.widthPixels;
-        bmpW = (screenW/3);
+//        bmpW = (screenW/3);
+        bmpW = (screenW/6);
         //设置游标宽度
         setBmpW(cursor, bmpW);
         offset = 0;
         //游标偏移量赋值
-        position_one = (int) (screenW / 3.0);
-        position_two = position_one * 2;
+//        position_one = (int) (screenW / 3.0);
+        position_one = (int) (screenW / 6.0);
+//        position_two = position_one * 2;
+        position_two = position_one * 5;
     }
     /**
      * 设置游标宽度
@@ -218,7 +225,7 @@ public class MainActivity extends FragmentActivity {
     private void InitViewPager() {
         mviewPager= (ViewPager) findViewById(R.id.vPager);
         mviewPager.setAdapter(new MFragmentPagerAdapter(fragmentManager,fragmentArrayList));
-        mviewPager.setOffscreenPageLimit(2);
+        mviewPager.setOffscreenPageLimit(5);
         mviewPager.setCurrentItem(0);
         resetTextViewTextColor();
         localMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
@@ -230,6 +237,9 @@ public class MainActivity extends FragmentActivity {
      */
     private void resetTextViewTextColor() {
         localMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color));
+        albumTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color));
+        artistTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color));
+        genresTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color));
         netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color));
         myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color));
 
@@ -239,11 +249,13 @@ public class MainActivity extends FragmentActivity {
      * 初始化Fragment
      */
     private void InitFragment() {
-        //MusicUtils.initMusicList();
         fragmentArrayList=new ArrayList<>();
         fragmentArrayList.add(new LocalMusicFragment());
-        fragmentArrayList.add(new NetMusicFragment());
+        fragmentArrayList.add(new AlbumMusicFragment());
+        fragmentArrayList.add(new ArtistMusicFragment());
         fragmentArrayList.add(new MloveMusicFragment());
+        fragmentArrayList.add(new GenresMusicFragment());
+        fragmentArrayList.add(new NetMusicFragment());
         fragmentManager=getSupportFragmentManager();
     }
     public void Visiable(){
@@ -257,14 +269,21 @@ public class MainActivity extends FragmentActivity {
         linearLayout=findViewById(R.id.linearLayout1);
         linearLayout1=findViewById(R.id.linearLayout2);
         context=getApplicationContext();
+
         localMTextview= (TextView) findViewById(R.id.localmusic_tv);
-        netMTextview= (TextView) findViewById(R.id.netmusic_tv);
+        albumTextview=findViewById(R.id.albummusic_tv);
+        artistTextview=findViewById(R.id.artistmusic_tv);
         myloveMTextview= (TextView) findViewById(R.id.mylovemusic_tv);
+        genresTextview=findViewById(R.id.genresmusic_tv);
+        netMTextview= (TextView) findViewById(R.id.netmusic_tv);
 
 
         localMTextview.setOnClickListener(new MyOnClickListener(0));
-        netMTextview.setOnClickListener(new MyOnClickListener(1));
-        myloveMTextview.setOnClickListener(new MyOnClickListener(2));
+        albumTextview.setOnClickListener(new MyOnClickListener(1));
+        artistTextview.setOnClickListener(new MyOnClickListener(2));
+        myloveMTextview.setOnClickListener(new MyOnClickListener(3));
+        genresTextview.setOnClickListener(new MyOnClickListener(4));
+        netMTextview.setOnClickListener(new MyOnClickListener(5));
     }
 
     public void onPopupWindowShown() {
@@ -326,24 +345,62 @@ public class MainActivity extends FragmentActivity {
                     if (currentIndex==0){
                         animation = new TranslateAnimation(offset, position_one, 0, 0);
                         resetTextViewTextColor();
-                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+//                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                        albumTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==2){
                         animation = new TranslateAnimation(position_two, position_one, 0, 0);
                         resetTextViewTextColor();
-                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                        albumTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+//                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }
                     break;
                 case 2:
-                    if (currentIndex==0){
-                        animation = new TranslateAnimation(offset, position_two, 0, 0);
+                    if (currentIndex==1){
+                        animation = new TranslateAnimation(offset, position_one*2, 0, 0);
+                        resetTextViewTextColor();
+//                        myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                        artistTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                    }else if (currentIndex==3){
+                        animation = new TranslateAnimation(position_two, position_one*2, 0, 0);
+                        resetTextViewTextColor();
+//                        myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                        artistTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                    }
+                    break;
+                case 3:
+                    if (currentIndex==2){
+                        animation = new TranslateAnimation(offset, position_one*3, 0, 0);
                         resetTextViewTextColor();
                         myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
-                    }else if (currentIndex==1){
-                        animation = new TranslateAnimation(position_one, position_two, 0, 0);
+                    }else if (currentIndex==4){
+                        animation = new TranslateAnimation(position_two, position_one*3, 0, 0);
                         resetTextViewTextColor();
                         myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }
                     break;
+                case 4:
+                    if (currentIndex==3){
+                        animation = new TranslateAnimation(offset, position_one*4, 0, 0);
+                        resetTextViewTextColor();
+                        genresTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                    }else if (currentIndex==5) {
+                        animation = new TranslateAnimation(position_two, position_one*4, 0, 0);
+                        resetTextViewTextColor();
+                        genresTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                    }
+                    break;
+                case 5:
+                    if (currentIndex==4){
+                        animation = new TranslateAnimation(offset, position_one*5, 0, 0);
+                        resetTextViewTextColor();
+                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                    }else if (currentIndex==0) {
+                        animation = new TranslateAnimation(position_two, position_one*5, 0, 0);
+                        resetTextViewTextColor();
+                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
+                    }
+                    break;
+
             }
             currentIndex=position;
             animation.setFillAfter(true);// true:图片停在动画结束位置
