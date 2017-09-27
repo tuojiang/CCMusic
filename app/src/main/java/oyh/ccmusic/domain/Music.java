@@ -17,19 +17,11 @@ public class Music implements Parcelable {
     private String url; // 歌曲路径 5
     private String lrcTitle; // 歌词名称
     private String lrcSize; // 歌词大小
-
-    public Music(String musicName, String musicPath, String image, String artist, int length, int id, String title, String url, String lrcTitle, String lrcSize) {
-        this.musicName = musicName;
-        this.musicPath = musicPath;
-        this.image = image;
-        this.artist = artist;
-        this.length = length;
-        this.id = id;
-        this.title = title;
-        this.url = url;
-        this.lrcTitle = lrcTitle;
-        this.lrcSize = lrcSize;
-    }
+    private String albumName;//专辑名称
+    private int albumSongs;//专辑下歌曲数
+    private int artistSongs;//艺术家下歌曲数
+    private int artistAlbums;//艺术家下专辑数
+    private String genres;//流派信息
 
     public Music(int length, String title, String url, String image, String artist) {
         this.length = length;
@@ -56,7 +48,52 @@ public class Music implements Parcelable {
                 ", url='" + url + '\'' +
                 ", lrcTitle='" + lrcTitle + '\'' +
                 ", lrcSize='" + lrcSize + '\'' +
+                ", albumName='" + albumName + '\'' +
+                ", albumSongs=" + albumSongs +
+                ", artistSongs=" + artistSongs +
+                ", artistAlbums=" + artistAlbums +
+                ", genres='" + genres + '\'' +
                 '}';
+    }
+
+    public String getGenres() {
+        return genres;
+    }
+
+    public void setGenres(String genres) {
+        this.genres = genres;
+    }
+
+    public String getAlbumName() {
+        return albumName;
+    }
+
+    public void setAlbumName(String albumName) {
+        this.albumName = albumName;
+    }
+
+    public int getAlbumSongs() {
+        return albumSongs;
+    }
+
+    public void setAlbumSongs(int albumSongs) {
+        this.albumSongs = albumSongs;
+    }
+
+    public int getArtistSongs() {
+        return artistSongs;
+    }
+
+    public void setArtistSongs(int artistSongs) {
+        this.artistSongs = artistSongs;
+    }
+
+    public int getArtistAlbums() {
+        return artistAlbums;
+    }
+
+    public void setArtistAlbums(int artistAlbums) {
+        this.artistAlbums = artistAlbums;
     }
 
     public String getUrl() {
@@ -159,6 +196,11 @@ public class Music implements Parcelable {
         dest.writeString(url);
         dest.writeString(lrcTitle);
         dest.writeString(lrcSize);
+        dest.writeString(albumName);
+        dest.writeInt(albumSongs);
+        dest.writeInt(artistSongs);
+        dest.writeInt(artistAlbums);
+        dest.writeString(genres);
     }
 
     /**
@@ -183,6 +225,11 @@ public class Music implements Parcelable {
             music.setUrl(source.readString());
             music.setLrcTitle(source.readString());
             music.setLrcSize(source.readString());
+            music.setAlbumName(source.readString());
+            music.setAlbumSongs(source.readInt());
+            music.setArtistSongs(source.readInt());
+            music.setArtistAlbums(source.readInt());
+            music.setGenres(source.readString());
             return music;
         }
 

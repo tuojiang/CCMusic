@@ -1,13 +1,48 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="oyh.ccmusic.fragment.ArtistMusicFragment">
+    android:layout_margin="10dp">
 
-    <!-- TODO: Update blank fragment layout -->
+    <View
+        android:id="@+id/music_list_selected"
+        android:background="@android:color/holo_blue_dark"
+        android:layout_width="2dp"
+        android:layout_height="50dp" />
+
+    <ImageView
+        android:id="@+id/iv_artist_layout_ico"
+        android:scaleType="centerCrop"
+        android:layout_marginLeft="5dp"
+        android:layout_toRightOf="@id/music_list_selected"
+        android:src="@mipmap/img"
+        android:layout_width="50dp"
+        android:layout_height="50dp" />
+
     <TextView
+        android:id="@+id/tv_artist_list_artist"
+        android:text="artist"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="3dp"
+        android:singleLine="true"
+        android:layout_toRightOf="@id/iv_artist_layout_ico"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="艺术家" />
+        android:layout_height="wrap_content" />
 
-</FrameLayout>
+    <TextView
+        android:id="@+id/tv_artist_list_songs_and_albums"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="3dp"
+        android:maxLines="2"
+        android:textSize="12sp"
+        android:textColor="@color/black"
+        android:text="songs and albums"
+        android:layout_toRightOf="@id/iv_artist_layout_ico"
+        android:layout_below="@id/tv_artist_list_artist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+</RelativeLayout>

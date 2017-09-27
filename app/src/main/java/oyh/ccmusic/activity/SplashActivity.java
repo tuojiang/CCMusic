@@ -26,9 +26,7 @@ public class SplashActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.welcome_splash_layout);
         //启动后台播放服务
-        //startService(new Intent(this, LocalMusicService.class));
         MusicUtils.initMusicList(this);
-//        MusicUtils.initMusicSQLList(this);
 
         new Handler().postDelayed(new Runnable() {
             @Override

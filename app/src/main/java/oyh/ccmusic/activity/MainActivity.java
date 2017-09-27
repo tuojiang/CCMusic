@@ -336,7 +336,7 @@ public class MainActivity extends FragmentActivity {
                         resetTextViewTextColor();
                         localMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==2){
-                        animation = new TranslateAnimation(position_two, 0, 0, 0);
+                        animation = new TranslateAnimation(position_one, 0, 0, 0);
                         resetTextViewTextColor();
                         localMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }
@@ -348,7 +348,7 @@ public class MainActivity extends FragmentActivity {
 //                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                         albumTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==2){
-                        animation = new TranslateAnimation(position_two, position_one, 0, 0);
+                        animation = new TranslateAnimation(position_one*2, position_one, 0, 0);
                         resetTextViewTextColor();
                         albumTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
 //                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
@@ -356,12 +356,12 @@ public class MainActivity extends FragmentActivity {
                     break;
                 case 2:
                     if (currentIndex==1){
-                        animation = new TranslateAnimation(offset, position_one*2, 0, 0);
+                        animation = new TranslateAnimation(position_one, position_one*2, 0, 0);
                         resetTextViewTextColor();
 //                        myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                         artistTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==3){
-                        animation = new TranslateAnimation(position_two, position_one*2, 0, 0);
+                        animation = new TranslateAnimation(position_one*3, position_one*2, 0, 0);
                         resetTextViewTextColor();
 //                        myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                         artistTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
@@ -369,29 +369,29 @@ public class MainActivity extends FragmentActivity {
                     break;
                 case 3:
                     if (currentIndex==2){
-                        animation = new TranslateAnimation(offset, position_one*3, 0, 0);
+                        animation = new TranslateAnimation(position_one*2, position_one*3, 0, 0);
                         resetTextViewTextColor();
                         myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==4){
-                        animation = new TranslateAnimation(position_two, position_one*3, 0, 0);
+                        animation = new TranslateAnimation(position_one*4, position_one*3, 0, 0);
                         resetTextViewTextColor();
                         myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }
                     break;
                 case 4:
                     if (currentIndex==3){
-                        animation = new TranslateAnimation(offset, position_one*4, 0, 0);
+                        animation = new TranslateAnimation(position_one*3, position_one*4, 0, 0);
                         resetTextViewTextColor();
                         genresTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==5) {
-                        animation = new TranslateAnimation(position_two, position_one*4, 0, 0);
+                        animation = new TranslateAnimation(position_one*5, position_one*4, 0, 0);
                         resetTextViewTextColor();
                         genresTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }
                     break;
                 case 5:
                     if (currentIndex==4){
-                        animation = new TranslateAnimation(offset, position_one*5, 0, 0);
+                        animation = new TranslateAnimation(position_one*4, position_one*5, 0, 0);
                         resetTextViewTextColor();
                         netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==0) {

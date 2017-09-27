@@ -45,14 +45,24 @@ public class LocalMusicUtils {
         return  mInstance;
     }
 
+    public ArrayList<Music> queryAlbums(String path){
+        ArrayList<Music> results=new ArrayList<>();
+        Cursor cursor=mContext.getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,  null ,  null , null ,
+                MediaStore.Audio.Albums.DEFAULT_SORT_ORDER);
+        return results;
+    }
+    /**
+     * 查询sd路径下所有音乐
+     * @param path
+     * @return
+     */
     public ArrayList<Music> queryMusic(String path) {
-        ArrayList<Music> results = new ArrayList<Music>();
+        ArrayList<Music> results = new ArrayList<>();
         Cursor cursor = mContext.getContentResolver().query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null,
                 MediaStore.Audio.Media.DATA + " like ?",
                 new String[]{path + "%"},
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
-
         if (cursor == null) return results;
         Music music;
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
@@ -71,6 +81,11 @@ public class LocalMusicUtils {
             music.setLength(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)));
             music.setImage(getAlbumImage(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID))));
             music.setUrl(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA)));
+            music.setAlbumName(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM)));
+            music.setAlbumSongs(getAlbumSongs(cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM))));
+            music.setArtistSongs(getArtistSongs(artist));
+            music.setArtistAlbums(getArtistAlbums(artist));
+            music.setGenres(getGenres(cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))));
             results.add(music);
         }
 
@@ -90,6 +105,85 @@ public class LocalMusicUtils {
             }
         }
         return false;
+    }
+    /**
+     * 根据音乐家获取专辑数
+     * @param artist
+     * @return
+     */
+    private int getArtistAlbums(String artist) {
+        int result = 0;
+        Cursor cursor = null;
+        try {
+            cursor = AppliContext.sContext.getContentResolver().query(
+                    Uri.parse("content://media/external/audio/artists/"
+                    ), null, "artist=?",
+                    new String[]{artist}, null);
+            for (cursor.moveToFirst(); !cursor.isAfterLast();) {
+                result =cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.NUMBER_OF_ALBUMS));
+                break;
+            }
+        } catch (Exception e) {
+        } finally {
+            if (null != cursor) {
+                cursor.close();
+            }
+        }
+
+        return result;
+    }
+    /**
+     * 根据音乐家获取歌曲数
+     * @param artist
+     * @return
+     */
+    private int getArtistSongs(String artist) {
+        int result = 0;
+        Cursor cursor = null;
+        try {
+            cursor = AppliContext.sContext.getContentResolver().query(
+                    Uri.parse("content://media/external/audio/artists/"
+                        ), null, "artist=?",
+                    new String[]{artist}, null);
+            for (cursor.moveToFirst(); !cursor.isAfterLast();) {
+                result =cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Artists.NUMBER_OF_TRACKS));
+                break;
+            }
+        } catch (Exception e) {
+        } finally {
+            if (null != cursor) {
+                cursor.close();
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 根据专辑名称获取专辑歌曲数
+     * @param album
+     * @return
+     */
+    private int getAlbumSongs(String album) {
+        int result = 0;
+        Cursor cursor = null;
+        try {
+            cursor = AppliContext.sContext.getContentResolver().query(
+                    Uri.parse("content://media/external/audio/albums/"
+                            ), null, "album=?",
+                    new String[]{album}, null);
+            for (cursor.moveToFirst(); !cursor.isAfterLast();) {
+                result =cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Albums.NUMBER_OF_SONGS));
+                break;
+            }
+        } catch (Exception e) {
+        } finally {
+            if (null != cursor) {
+                cursor.close();
+            }
+        }
+
+        return result;
     }
     /**
      * 根据歌曲id获取图片
@@ -123,15 +217,44 @@ public class LocalMusicUtils {
      * @param audioId
      * @return
      */
+//    public String getGenres(int audioId){
+//        String result="";
+//        Cursor cursor=null;
+//        try{//TODO 流派信息获取
+//            cursor=AppliContext.sContext.getContentResolver().query(
+////                    Uri.parse("content://media/external/audio/media/" + audioId+ "/genre/"),
+//                   MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI,
+//                    new String[]{android.provider.MediaStore.Audio.GenresColumns.NAME}, "audio_id=?"+audioId, null, null);
+//            for (cursor.moveToFirst();cursor.isAfterLast();){
+//                result=cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.GenresColumns.NAME));
+////                result=cursor.getString(0);
+//                break;
+//            }
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }finally {
+//            if (null!=cursor){
+//                cursor.close();
+//            }
+//        }
+//        return null == result ? null:result;
+//    }
+    /**
+     * 获取流派信息
+     * @param
+     * @return
+     */
     public String getGenres(int audioId){
-        String result="";
+        Uri genresUri = MediaStore.Audio.Genres.EXTERNAL_CONTENT_URI;
         Cursor cursor=null;
-        try{//TODO 流派信息获取
-            cursor=AppliContext.sContext.getContentResolver().query(Uri.parse("content://media/external/audio/media/" + audioId+ "/genres"),
-                    new String[]{android.provider.MediaStore.Audio.GenresColumns.NAME}, null, null, null);
-            for (cursor.moveToFirst();cursor.isAfterLast();){
-                result=cursor.getString(0);
-                break;
+        String result="";
+        try {
+            cursor = AppliContext.sContext.getContentResolver().query(genresUri, null, "audio_id=?", new String[]{String.valueOf(audioId)}, null);
+            cursor.moveToFirst();
+            String[] columns = cursor.getColumnNames();
+            for (String string : columns) {
+                result = cursor.getString(cursor.getColumnIndex(string));
+                Log.e("getGenres", result);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -140,7 +263,7 @@ public class LocalMusicUtils {
                 cursor.close();
             }
         }
-        return null == result ? null:result;
+        return null==result?null:result;
     }
     /**
      * 查询本地数据库
