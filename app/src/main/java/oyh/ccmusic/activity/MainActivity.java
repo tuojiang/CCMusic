@@ -105,8 +105,12 @@ public class MainActivity extends FragmentActivity {
 
         //注册广播
         registerReceiver();
-
-//        MusicUtils.initMusicList();
+        //初始化专辑列表
+        MusicUtils.initAlbumList(this,MusicUtils.commonList);
+        //初始化艺术家列表
+        MusicUtils.initArtistList(this,MusicUtils.commonList1);
+        //初始化流派列表
+        MusicUtils.initGenresList(this,MusicUtils.commonList2);
 
     }
     private LocalMusicService.CallBack callBack;

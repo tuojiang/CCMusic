@@ -8,7 +8,12 @@ import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.adapter.LrcProcess;
@@ -26,8 +31,16 @@ public class MusicUtils {
     public static ArrayList<Music> sMusicList = new ArrayList<>();
     // 存放歌曲列表 数据库
     public static ArrayList<Music> sMusicSQlList = new ArrayList<>();
+    // 存放专辑歌阙列表
+    public static ArrayList<Music> albumlList =  new ArrayList<>();
+    // 存放艺术家列表
+    public static ArrayList<Music> artistlList =  new ArrayList<>();
+    // 存放流派列表
+    public static ArrayList<Music> genreslList =  new ArrayList<>();
+    public static ArrayList<Music> commonList =  new ArrayList<>();
+    public static ArrayList<Music> commonList1 =  new ArrayList<>();
+    public static ArrayList<Music> commonList2 =  new ArrayList<>();
     public static int index = 0;          //歌词检索值
-
     private static LrcProcess mLrcProcess; //歌词处理
     /**
      * 初始化歌曲列表
@@ -36,7 +49,67 @@ public class MusicUtils {
         // 获取歌曲列表
         sMusicList.clear();
         sMusicList.addAll(LocalMusicUtils.getInstance(context).queryMusic(Environment.getExternalStorageDirectory().getAbsolutePath()));
+        commonList.addAll(sMusicList);
+        commonList1.addAll(sMusicList);
+        commonList2.addAll(sMusicList);
     }
+    /**
+     * 初始化流派列表
+     * @param context
+     * @param list
+     */
+    public static void initGenresList(Context context,ArrayList list){
+        Set set = new HashSet();
+        List newList = new ArrayList();
+        for (int i=0;i<list.size();i++){
+            Music music= (Music) list.get(i);
+            String genres=music.getGenres();
+            if (set.add(genres))
+                newList.add(music);
+        }
+        list.clear();
+        genreslList.addAll(newList);
+        Log.e("initGenresList","siz="+String.valueOf(genreslList.size()));
+    }
+    /**
+     * 初始化艺术家列表
+     * @param context
+     * @param list
+     */
+    public static void initArtistList(Context context,ArrayList list){
+        Set set = new HashSet();
+        List newList = new ArrayList();
+        for (int i=0;i<list.size();i++){
+            Music music= (Music) list.get(i);
+            String artistName=music.getArtist();
+            if (set.add(artistName))
+                newList.add(music);
+        }
+        list.clear();
+        artistlList.addAll(newList);
+        Log.e("initArtistList","siz="+String.valueOf(artistlList.size()));
+
+    }
+    /**
+     * 初始化专辑列表
+     * @param context
+     * @param list
+     */
+    public static void initAlbumList(Context context,ArrayList list){
+        Set set = new HashSet();
+        List newList = new ArrayList();
+        for (int i=0;i<list.size();i++){
+            Music music= (Music) list.get(i);
+        String albumName=music.getAlbumName();
+            if (set.add(albumName))
+                newList.add(music);
+        }
+        list.clear();
+        albumlList.addAll(newList);
+        Log.e("initAlbumList","siz="+String.valueOf(albumlList.size()));
+
+    }
+
     /**
      * 初始化我喜欢列表
      */
@@ -106,5 +179,18 @@ public class MusicUtils {
 
         return defaultObject;
     }
-
+    /**
+     * 根据音乐名称和艺术家来判断是否重复包含了
+     * @param albumName
+     * @param artist
+     * @return
+     */
+    private static boolean isRepeat(String albumName, String artist) {
+        for (Music music : MusicUtils.sMusicList) {
+            if (albumName.equals(music.getAlbumName()) && artist.equals(music.getArtist())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

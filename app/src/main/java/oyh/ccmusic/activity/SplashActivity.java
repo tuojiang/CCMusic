@@ -27,7 +27,6 @@ public class SplashActivity extends Activity {
         setContentView(R.layout.welcome_splash_layout);
         //启动后台播放服务
         MusicUtils.initMusicList(this);
-
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {

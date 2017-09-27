@@ -11,4 +11,7 @@
     <string name="artistmusic">艺术家</string>
     <string name="genresmusic">流派</string>
     <string name="title_activity_main2">Main2Activity</string>
+    <string name="album_songs_string">%1$d首歌</string>
+    <string name="genres_songs_string">%1$d首歌</string>
+    <string name="artist_songs_albums_string">%1$d首歌,%2$d张专辑</string>
 </resources>

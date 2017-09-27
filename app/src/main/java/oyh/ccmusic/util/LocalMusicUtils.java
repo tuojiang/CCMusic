@@ -10,6 +10,12 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import oyh.ccmusic.Provider.DBHelper;
 import oyh.ccmusic.Provider.PlayListContentProvider;
@@ -28,12 +34,10 @@ public class LocalMusicUtils {
      * @param dirName
      */
     private Context mContext;
-
     private static LocalMusicUtils mInstance;
     private LocalMusicUtils(Context context) {
         mContext = context;
     }
-
     public static LocalMusicUtils getInstance(Context context) {
         if (mInstance == null) {
             synchronized (LocalMusicUtils.class) {
@@ -45,12 +49,6 @@ public class LocalMusicUtils {
         return  mInstance;
     }
 
-    public ArrayList<Music> queryAlbums(String path){
-        ArrayList<Music> results=new ArrayList<>();
-        Cursor cursor=mContext.getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,  null ,  null , null ,
-                MediaStore.Audio.Albums.DEFAULT_SORT_ORDER);
-        return results;
-    }
     /**
      * 查询sd路径下所有音乐
      * @param path
@@ -254,7 +252,6 @@ public class LocalMusicUtils {
             String[] columns = cursor.getColumnNames();
             for (String string : columns) {
                 result = cursor.getString(cursor.getColumnIndex(string));
-                Log.e("getGenres", result);
             }
         }catch (Exception e){
             e.printStackTrace();
