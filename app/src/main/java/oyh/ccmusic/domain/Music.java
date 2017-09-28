@@ -22,6 +22,7 @@ public class Music implements Parcelable {
     private int artistSongs;//艺术家下歌曲数
     private int artistAlbums;//艺术家下专辑数
     private String genres;//流派信息
+    private int genresSongs;//流派歌曲数
 
     public Music(int length, String title, String url, String image, String artist) {
         this.length = length;
@@ -53,7 +54,16 @@ public class Music implements Parcelable {
                 ", artistSongs=" + artistSongs +
                 ", artistAlbums=" + artistAlbums +
                 ", genres='" + genres + '\'' +
+                ", genresSongs=" + genresSongs +
                 '}';
+    }
+
+    public int getGenresSongs() {
+        return genresSongs;
+    }
+
+    public void setGenresSongs(int genresSongs) {
+        this.genresSongs = genresSongs;
     }
 
     public String getGenres() {
@@ -201,6 +211,7 @@ public class Music implements Parcelable {
         dest.writeInt(artistSongs);
         dest.writeInt(artistAlbums);
         dest.writeString(genres);
+        dest.writeInt(genresSongs);
     }
 
     /**
@@ -230,6 +241,7 @@ public class Music implements Parcelable {
             music.setArtistSongs(source.readInt());
             music.setArtistAlbums(source.readInt());
             music.setGenres(source.readString());
+            music.setGenresSongs(source.readInt());
             return music;
         }
 

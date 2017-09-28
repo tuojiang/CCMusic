@@ -7,9 +7,11 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -20,6 +22,8 @@ import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
 import oyh.ccmusic.util.MusicUtils;
+
+import static oyh.ccmusic.util.MusicUtils.queryGenrestItem;
 
 /**
  * 流派列表
@@ -52,8 +56,28 @@ public class GenresMusicFragment extends Fragment {
         mListView=layout.findViewById(R.id.lv_genres_music);
         adapter=new GenresListAdapter();
         mListView.setAdapter(adapter);
+        mListView.setOnItemClickListener(mMusicItemClickListener);
         return layout;
     }
+
+    /**
+     * 监听歌曲点击事件
+     */
+    private AdapterView.OnItemClickListener mMusicItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position,
+                                long id) {
+            // 先把所属专辑下歌曲查询好放入itemCommonList数据库中备用
+            String genresName=MusicUtils.genreslList.get(position).getGenres();
+            queryGenrestItem(genresName,MusicUtils.sMusicList);
+            Log.e("queryGenrestItem", String.valueOf(MusicUtils.itemCommonList.size()));
+            fragmentManager=getFragmentManager();
+            transaction = fragmentManager.beginTransaction();
+            GenresItemFragment genresItemFragment=new GenresItemFragment();
+            transaction.add(R.id.music_detail_fragment,genresItemFragment).addToBackStack(null).commit();
+        }
+    };
+
     public class GenresListAdapter extends BaseAdapter{
         class ViewHolder{
             ImageView ico;
@@ -95,10 +119,11 @@ public class GenresMusicFragment extends Fragment {
             Music music= (Music) getItem(i);
             Bitmap ico= BitmapFactory.decodeFile(music.getImage());
             viewHolder.ico.setImageBitmap(ico==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
-            String notKnow="未知";
             viewHolder.title.setText(music.getGenres());
+            String amount= MusicUtils.map.get(music.getGenres());
             //TODO 获取流派歌曲数量
-//            viewHolder.songView.setText();
+            String songs = String.format( AppliContext.sContext.getResources().getString( R.string.genres_songs_string), amount);
+            viewHolder.songView.setText(songs);
             return view;
         }
     }

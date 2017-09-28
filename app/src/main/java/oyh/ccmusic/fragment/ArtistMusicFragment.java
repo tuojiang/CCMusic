@@ -7,9 +7,11 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -20,6 +22,8 @@ import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
 import oyh.ccmusic.util.MusicUtils;
+
+import static oyh.ccmusic.util.MusicUtils.queryArtistItem;
 
 /**
  * 艺术家列表
@@ -50,8 +54,27 @@ public class ArtistMusicFragment extends Fragment {
         adapter=new ArtistListAdapter(mActivity);
         mListView=layout.findViewById(R.id.lv_artist_music);
         mListView.setAdapter(adapter);
+        mListView.setOnItemClickListener(mMusicItemClickListener);
         return layout;
     }
+    /**
+     * 监听歌曲点击事件
+     */
+    private AdapterView.OnItemClickListener mMusicItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position,
+                                long id) {
+            // 先把所属专辑下歌曲查询好放入itemCommonList数据库中备用
+            String artist=MusicUtils.artistlList.get(position).getArtist();
+            queryArtistItem(artist,MusicUtils.sMusicList);
+            fragmentManager=getFragmentManager();
+            transaction = fragmentManager.beginTransaction();
+            ArtistItemFragment artistItemFragment=new ArtistItemFragment();
+            transaction.add(R.id.music_detail_fragment,artistItemFragment).addToBackStack(null).commit();
+        }
+    };
+
+
     public class ArtistListAdapter extends BaseAdapter{
         private LayoutInflater inflater;
         class ViewHolder{

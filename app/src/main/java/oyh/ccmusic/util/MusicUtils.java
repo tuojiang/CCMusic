@@ -1,26 +1,21 @@
 package oyh.ccmusic.util;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Environment;
-import android.provider.SyncStateContract;
 import android.util.Log;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import oyh.ccmusic.activity.AppliContext;
-import oyh.ccmusic.adapter.LrcProcess;
-import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 
-import static android.R.attr.duration;
 
 /**
  * 歌曲列表工具类
@@ -37,11 +32,13 @@ public class MusicUtils {
     public static ArrayList<Music> artistlList =  new ArrayList<>();
     // 存放流派列表
     public static ArrayList<Music> genreslList =  new ArrayList<>();
+    // 初始化公共列表
     public static ArrayList<Music> commonList =  new ArrayList<>();
-    public static ArrayList<Music> commonList1 =  new ArrayList<>();
+    // 存放item列表
+    public static ArrayList<Music> itemCommonList =  new ArrayList<>();
     public static ArrayList<Music> commonList2 =  new ArrayList<>();
-    public static int index = 0;          //歌词检索值
-    private static LrcProcess mLrcProcess; //歌词处理
+    public static ArrayList<Music> genresSongslList =  new ArrayList<>();
+    public static HashMap<String, String> map = new HashMap<String, String>();
     /**
      * 初始化歌曲列表
      */
@@ -50,26 +47,31 @@ public class MusicUtils {
         sMusicList.clear();
         sMusicList.addAll(LocalMusicUtils.getInstance(context).queryMusic(Environment.getExternalStorageDirectory().getAbsolutePath()));
         commonList.addAll(sMusicList);
-        commonList1.addAll(sMusicList);
-        commonList2.addAll(sMusicList);
     }
     /**
      * 初始化流派列表
      * @param context
      * @param list
      */
-    public static void initGenresList(Context context,ArrayList list){
+    @TargetApi(Build.VERSION_CODES.N)
+    public static void initGenresList(Context context, ArrayList list){
         Set set = new HashSet();
         List newList = new ArrayList();
-        for (int i=0;i<list.size();i++){
-            Music music= (Music) list.get(i);
-            String genres=music.getGenres();
-            if (set.add(genres))
+        for (int i=0;i<list.size();i++) {
+            Music music = (Music) list.get(i);
+            String genres = music.getGenres();
+            if (set.add(genres)) {
                 newList.add(music);
+            }
+            String count = map.get(genres);
+            if (count == null) {
+                map.put(genres, "1");
+            } else {
+                map.put(genres, (Integer.parseInt(count) + 1)+"");
+            }
         }
-        list.clear();
+
         genreslList.addAll(newList);
-        Log.e("initGenresList","siz="+String.valueOf(genreslList.size()));
     }
     /**
      * 初始化艺术家列表
@@ -85,9 +87,7 @@ public class MusicUtils {
             if (set.add(artistName))
                 newList.add(music);
         }
-        list.clear();
         artistlList.addAll(newList);
-        Log.e("initArtistList","siz="+String.valueOf(artistlList.size()));
 
     }
     /**
@@ -104,12 +104,9 @@ public class MusicUtils {
             if (set.add(albumName))
                 newList.add(music);
         }
-        list.clear();
         albumlList.addAll(newList);
-        Log.e("initAlbumList","siz="+String.valueOf(albumlList.size()));
 
     }
-
     /**
      * 初始化我喜欢列表
      */
@@ -121,6 +118,56 @@ public class MusicUtils {
      */
     public static void removeMusicSQLList(Context context){
         sMusicSQlList.clear();
+    }
+
+    /**
+     * 查询Album item列表的数据个数
+     * @param albumName
+     * @param list
+     */
+    public static void queryItem(String albumName,ArrayList<Music> list){
+        List newList = new ArrayList();
+        for (int i=0;i<list.size();i++){
+            Music music= list.get(i);
+            if (albumName.equals(music.getAlbumName()))
+                newList.add(music);
+
+        }
+        itemCommonList.clear();
+        itemCommonList.addAll(newList);
+
+    }
+    /**
+     * 查询Artist item列表的数据个数
+     * @param artist
+     * @param list
+     */
+    public static void queryArtistItem(String artist,ArrayList<Music> list){
+        List newList = new ArrayList();
+        for (int i=0;i<list.size();i++){
+            Music music= list.get(i);
+            if (artist.equals(music.getArtist()))
+                newList.add(music);
+        }
+        itemCommonList.clear();
+        itemCommonList.addAll(newList);
+
+    }
+    /**
+     * 查询Genres item列表的数据个数
+     * @param name
+     * @param list
+     */
+    public static void queryGenrestItem(String name,ArrayList<Music> list){
+        List newList = new ArrayList();
+        for (int i=0;i<list.size();i++){
+            Music music= list.get(i);
+            if (name.equals(music.getGenres()))
+                newList.add(music);
+        }
+        itemCommonList.clear();
+        itemCommonList.addAll(newList);
+
     }
     /**
      * 获取sd卡路径
