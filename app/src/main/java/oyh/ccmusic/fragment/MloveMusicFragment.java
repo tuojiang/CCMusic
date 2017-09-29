@@ -63,16 +63,15 @@ public class MloveMusicFragment extends Fragment{
                                 long id) {
             onPlay(position);
             mActivity.Visiable();
-//            MusicUtils.put("mlposition", position);
+            Log.e("mMusicItemClickListener",MusicUtils.sMusicSQlList.get(position).getTitle());
             fragmentManager=getFragmentManager();
             transaction = fragmentManager.beginTransaction();
             MusicMLDetailFragment musicMLDetailFragment=new MusicMLDetailFragment();
             transaction.add(R.id.music_detail_fragment,musicMLDetailFragment).addToBackStack(null).commit();
-            Toast.makeText(AppliContext.sContext,"pisition:"+position,Toast.LENGTH_LONG).show();
         }
     };
     private void onPlay(int position){
-        mActivity.getLocalMusicService().play(position);
+        mActivity.getLocalMusicService().mlovePlay(position);
     }
 
 }

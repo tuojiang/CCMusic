@@ -2,40 +2,28 @@ package oyh.ccmusic.fragment;
 
 
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import oyh.ccmusic.R;
-import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
-import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
-import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 import oyh.ccmusic.util.MusicUtils;
 
@@ -43,7 +31,8 @@ import oyh.ccmusic.util.MusicUtils;
  * A simple {@link Fragment} subclass.
  */
 @TargetApi(Build.VERSION_CODES.N)
-public class MusicDetailFragment extends Fragment implements View.OnClickListener{
+public class ArtistPlayFragment extends Fragment implements View.OnClickListener{
+
     private ImageButton bt_play, bt_pre, bt_next;
     private SeekBar seekBar;
     private MyHandler mHandler = new MyHandler();
@@ -67,24 +56,54 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
     private int index=0;
     private boolean isSeekBarChanging;
     private MainActivity mActivity;
-    public LrcView lrcView; // 自定义歌词视图
-    private String url; // 歌曲路径
-    private MainActivity mainActivity;
-    private LrcProcess mLrcProcess; //歌词处理
     private static int ORDERMODE=0;
     private static int SHUFFLEMODE=1;
     private static int REPEATMODE=2;
     //    默认播放模式为顺序播放
     private static int CURRENTMODE=ORDERMODE;
-    public ArrayList<LrcContent> mLrcList;//存放歌词列表对象
+    public ArtistPlayFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mActivity= (MainActivity) getActivity();
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            // 播放或者暂停
+            case R.id.bt_play:
+                playerMusicByIBinder();
+                break;
+            case R.id.bt_pre:
+                mActivity.getLocalMusicService().itemPre();
+//                if (CURRENTMODE == SHUFFLEMODE) {
+//                } else {
+//                }
+
+                break;
+            case R.id.bt_next:
+                mActivity.getLocalMusicService().itemNext();
+//                if (CURRENTMODE == SHUFFLEMODE) {
+//                } else {
+//                }
+                break;
+            case R.id.iv_play_back:
+                getActivity().onBackPressed();
+                break;
+        }
+    }
 
     private  class MyHandler extends Handler {
 
         @Override
         public void handleMessage(Message msg) {
-            currentPosition= (int) MusicUtils.get(mActivity, "position", 0);
+            currentPosition= (int) MusicUtils.get(mActivity, "itemposition", 0);
             /** 接收音乐列表资源 */
-            music = MusicUtils.sMusicList.get(currentPosition);
+            music = MusicUtils.itemCommonList.get(currentPosition);
             mMusicTitle.setText(music.getTitle());
             mMusicArtist.setText(music.getArtist());
             int totalTime=music.getLength();
@@ -92,41 +111,20 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
             String total = format.format(new Date(totalTime));
             totalTimeTxt.setText(total);
             currentTimeTxt.setText(currentProgress);
+
             seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
         }
 
     }
-
-    Runnable mRunnable = new Runnable() {
-
-        @Override
-        public void run() {
-
-            lrcView.setIndex(mActivity.getLocalMusicService().lrcIndex());
-            lrcView.invalidate();
-            mHandler.postDelayed(mRunnable, 100);
-        }
-    };
-
-    public MusicDetailFragment() {
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        mActivity = (MainActivity) activity;
-    }
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View layout= inflater.inflate(R.layout.fragment_music_detail, container, false);
+        View layout= inflater.inflate(R.layout.fragment_artist_play, container, false);
         initData(layout);
-        getMusicLrc();
         seekTime();
         return layout;
     }
+
     private void seekTime(){
 
         new Thread(new Runnable() {
@@ -157,11 +155,11 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         bt_pre = view.findViewById(R.id.bt_pre);
         bt_next = view.findViewById(R.id.bt_next);
         mBack=view.findViewById(R.id.iv_play_back);
+        coverImage=view.findViewById(R.id.iv_album_ico_play);
         mCurtListSong= view.findViewById(R.id.im_curplaylist);
         mShuffleSong=  view.findViewById(R.id.im_shuffleSong);
         mRepeatSong= view.findViewById(R.id.im_repeatSong);
 
-        lrcView =  view.findViewById(R.id.lrcShowView);
         mMusicTitle=  view.findViewById(R.id.musicTitle);
         mMusicArtist= view.findViewById(R.id.musicArtist);
 
@@ -180,47 +178,6 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         mRepeatSong.setOnClickListener(this);
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            // 播放或者暂停
-            case R.id.bt_play:
-                playerMusicByIBinder();
-                break;
-            case R.id.bt_pre:
-                mActivity.getLocalMusicService().isPlayPre();
-//                if (CURRENTMODE == SHUFFLEMODE) {
-//                } else {
-//                }
-
-                break;
-            case R.id.bt_next:
-                mActivity.getLocalMusicService().isPlayNext();
-//                if (CURRENTMODE == SHUFFLEMODE) {
-//                } else {
-//                }
-                break;
-            case R.id.iv_play_back:
-                getActivity().onBackPressed();
-                //TODO 返回后标题栏还原
-//                mActivity.Visiable();
-                break;
-        }
-    }
-
-    /**
-     * 进行歌词处理
-     */
-    private void getMusicLrc(){
-        /**歌词处理*/
-        //TODO 切换歌词不同步
-        currentPosition= (int) MusicUtils.get(mActivity, "position", 0);
-        mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition);
-        lrcView.setmLrcList(mLrcList);
-        lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
-        mHandler.post(mRunnable);
-
-    }
 
     /**
      * 播放音乐通过Binder接口实现
@@ -241,9 +198,9 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         public void onProgressChanged(SeekBar seekBar, int progress,
                                       boolean fromUser) {
             mProgress = progress;
-                //更新播放时间0
-                currentProgress = format.format(new Date(mProgress));
-                currentTimeTxt.setText(currentProgress);
+            //更新播放时间0
+            currentProgress = format.format(new Date(mProgress));
+            currentTimeTxt.setText(currentProgress);
 
         }
 

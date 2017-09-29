@@ -1,5 +1,6 @@
 package oyh.ccmusic.service;
 
+import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -8,6 +9,7 @@ import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
@@ -55,8 +57,14 @@ public class LocalMusicService extends Service{
         int callTotalDate();
         int callCurrentTime();
         int play(int position);
+        int itemPlay(int position);
+        int mlovePlay(int position);
         int next();
+        int itemNext();
+        int mloveNext();
         int pre();
+        int itemPre();
+        int mlovePre();
         void start();
         int playMyLove(int position);
         void isSeekto(int m_send);
@@ -119,28 +127,98 @@ public class LocalMusicService extends Service{
 
         @Override
         public int play(int position) {
-//            currentPos = position;
-//            MusicUtils.put("position", position);
-//            initMusic();
-//            playerMusic();
             if(position < 0) position = 0;
             if(position >= MusicUtils.sMusicList.size()) position = MusicUtils.sMusicList.size() - 1;
 
             try {
                 mPlayer.reset();
                 mPlayer.setDataSource(MusicUtils.sMusicList.get(position).getMusicPath());
-                mPlayer.prepare();
+                mPlayer.prepareAsync();
+                mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        // 装载完毕回调
+                        start();
+                    }
+                });
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        next();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-                start();
+            currentPos = position-1;
+            MusicUtils.put("position", position);
+            return currentPos;
+        }
+
+        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+        @Override
+        public int itemPlay(int position) {
+            if(position < 0) position = 0;
+            if(position >= MusicUtils.itemCommonList.size()) position = MusicUtils.itemCommonList.size() - 1;
+
+            try {
+                mPlayer.reset();
+                mPlayer.setDataSource(MusicUtils.itemCommonList.get(position).getMusicPath());
+                mPlayer.prepareAsync();
+                mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        // 装载完毕回调
+                        start();
+                    }
+                });
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        itemNext();
+                    }
+                });
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             currentPos = position;
-            MusicUtils.put("position", position);
-
+            MusicUtils.put("itemposition", position);
             return currentPos;
         }
+
+        @Override
+        public int mlovePlay(int position) {
+            if(position < 0) position = 0;
+            if(position >= MusicUtils.sMusicSQlList.size()) position = MusicUtils.sMusicSQlList.size() - 1;
+
+            try {
+                mPlayer.reset();
+                mPlayer.setDataSource(MusicUtils.sMusicSQlList.get(position).getMusicPath());
+                mPlayer.prepareAsync();
+                mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        // 装载完毕回调
+                        start();
+                    }
+                });
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        mloveNext();
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            currentMLPosition = position;
+            MusicUtils.put("mlposition", position);
+            return currentMLPosition;
+        }
+
 
         @Override
         public int next() {
@@ -151,12 +229,44 @@ public class LocalMusicService extends Service{
         }
 
         @Override
+        public int itemNext() {
+            if(currentPos >= MusicUtils.itemCommonList.size() - 1) {
+                return itemPlay(0);
+            }
+            return itemPlay(currentPos + 1);
+        }
+
+        @Override
+        public int mloveNext() {
+            if(currentMLPosition >= MusicUtils.sMusicSQlList.size() - 1) {
+                return mlovePlay(0);
+            }
+            return mlovePlay(currentMLPosition + 1);
+        }
+
+
+        @Override
         public int pre() {
             if(currentPos <= 0) {
                 return play(MusicUtils.sMusicList.size() - 1);
             }
-
             return play(currentPos - 1);
+        }
+
+        @Override
+        public int itemPre() {
+            if(currentPos <= 0) {
+                return itemPlay(MusicUtils.itemCommonList.size() - 1);
+            }
+            return itemPlay(currentPos - 1);
+        }
+
+        @Override
+        public int mlovePre() {
+            if(currentMLPosition <= 0) {
+                return mlovePlay(MusicUtils.sMusicSQlList.size() - 1);
+            }
+            return mlovePlay(currentMLPosition - 1);
         }
 
         /**
@@ -223,7 +333,8 @@ public class LocalMusicService extends Service{
                 currentPos=0;
             }
             initLrc();
-            play(currentPos);
+            play(currentPos+1);
+//            pre();
         }
 
         /**
@@ -245,8 +356,9 @@ public class LocalMusicService extends Service{
                 currentPos=MusicUtils.sMusicList.size()-1;
             }
             initLrc();
-            initMusic();
-            playerMusic();
+//            initMusic();
+//            playerMusic();
+            next();
         }
 
         /**
@@ -501,7 +613,8 @@ public class LocalMusicService extends Service{
         mPlayer.reset();
         try {
             mPlayer.setDataSource(MusicUtils.sMusicList.get(currentPos).getMusicPath());
-            mPlayer.prepare();
+//            mPlayer.prepare();
+            mPlayer.prepareAsync();
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
@@ -528,7 +641,8 @@ public class LocalMusicService extends Service{
         try {
 
             mPlayer.setDataSource(MusicUtils.sMusicList.get(currentPos).getMusicPath());
-            mPlayer.prepare();
+//            mPlayer.prepare();
+            mPlayer.prepareAsync();
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
@@ -552,7 +666,8 @@ public class LocalMusicService extends Service{
         mPlayer.reset();
         try{
             mPlayer.setDataSource(MusicUtils.sMusicList.get(currentPos).getMusicPath());
-            mPlayer.prepare();
+//            mPlayer.prepare();
+            mPlayer.prepareAsync();
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
@@ -577,7 +692,8 @@ public class LocalMusicService extends Service{
         try{
             mPlayer.setDataSource(MusicUtils.sMusicSQlList.get(currentMLPosition).getMusicPath());
             Log.e("service","initMLMusic"+MusicUtils.sMusicSQlList.size());
-            mPlayer.prepare();
+//            mPlayer.prepare();
+            mPlayer.prepareAsync();
             mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mediaPlayer) {
@@ -603,6 +719,7 @@ public class LocalMusicService extends Service{
             mPlayer.pause();
             return false;
         }else {
+
             mPlayer.start();
             return true;
         }
@@ -634,4 +751,10 @@ public class LocalMusicService extends Service{
         return new MyBinder();
     }
 
+    @Override
+    public void onDestroy() {
+        if(mPlayer != null) mPlayer.release();
+        mPlayer = null;
+        super.onDestroy();
+    }
 }

@@ -120,6 +120,9 @@ public class MusicMLDetailFragment extends Fragment implements View.OnClickListe
         initData(layout);
         getMusicLrc();
         seekTime();
+
+        Log.e("onCreateView","size="+MusicUtils.sMusicSQlList.size());
+
         return layout;
     }
     private void seekTime(){
@@ -189,15 +192,17 @@ public class MusicMLDetailFragment extends Fragment implements View.OnClickListe
                 playerMusicByIBinder();
                 break;
             case R.id.bt_ml_pre:
-                if (CURRENTMODE == SHUFFLEMODE) {
-                } else {
-                }
 
+//                if (CURRENTMODE == SHUFFLEMODE) {
+//                } else {
+//                }
+                mActivity.getLocalMusicService().mlovePre();
                 break;
             case R.id.bt_ml_next:
-                if (CURRENTMODE == SHUFFLEMODE) {
-                } else {
-                }
+                mActivity.getLocalMusicService().mloveNext();
+//                if (CURRENTMODE == SHUFFLEMODE) {
+//                } else {
+//                }
                 break;
             case R.id.iv_play_back_ml:
                 getActivity().onBackPressed();

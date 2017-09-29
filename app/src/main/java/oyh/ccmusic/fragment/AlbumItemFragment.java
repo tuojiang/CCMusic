@@ -7,9 +7,11 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -25,11 +27,12 @@ import oyh.ccmusic.util.MusicUtils;
  * 点击专辑列表页面
  * A simple {@link Fragment} subclass.
  */
-public class AlbumItemFragment extends Fragment {
+public class AlbumItemFragment extends Fragment implements View.OnClickListener{
 
     private MainActivity mActivity;
     private ListView listView;
     private ImageView icoUp;
+    private ImageView iv_back;
     private TextView albumName,artist;
     private AlbumItemListAdapter adapter;
     private FragmentManager fragmentManager;
@@ -52,6 +55,7 @@ public class AlbumItemFragment extends Fragment {
         listView=layout.findViewById(R.id.lv_album_item_music);
         adapter=new AlbumItemListAdapter();
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(mAlbumItemClickListener);
         initView(layout);
         return layout;
     }
@@ -66,11 +70,38 @@ public class AlbumItemFragment extends Fragment {
         icoUp=view.findViewById(R.id.iv_album_item_ico_up);
         albumName=view.findViewById(R.id.tv_album_item_albumname);
         artist=view.findViewById(R.id.tv_album_item_artist);
+        iv_back=view.findViewById(R.id.iv_back_album);
+        iv_back.setOnClickListener(this);
 
         icoUp.setImageBitmap(icoUp==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
         albumName.setText(musicIcoUp.getAlbumName());
         artist.setText(musicIcoUp.getArtist());
 
+    }
+
+    private AdapterView.OnItemClickListener mAlbumItemClickListener=new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            mActivity.Visiable();
+            onPlay(i);
+            fragmentManager=getFragmentManager();
+            transaction = fragmentManager.beginTransaction();
+            AlbumPlayFragment albumPlayFragment=new AlbumPlayFragment();
+            transaction.replace(R.id.music_detail_fragment,albumPlayFragment).addToBackStack(null).commit();
+        }
+    };
+
+    private void onPlay(int position) {
+        int pos=mActivity.getLocalMusicService().itemPlay(position);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.iv_back_album:
+                getActivity().onBackPressed();
+                break;
+        }
     }
 
     public class AlbumItemListAdapter extends BaseAdapter{

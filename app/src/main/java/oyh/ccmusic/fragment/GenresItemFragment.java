@@ -1,6 +1,8 @@
 package oyh.ccmusic.fragment;
 
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -9,6 +11,7 @@ import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -23,9 +26,10 @@ import oyh.ccmusic.util.MusicUtils;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class GenresItemFragment extends Fragment {
+public class GenresItemFragment extends Fragment implements View.OnClickListener{
     private MainActivity mActivity;
     private ListView listView;
+    private ImageView iv_back;
     private ImageView icoUp;
     private TextView genrestSongs,genresName;
     private GenresItemListAdapter adapter;
@@ -36,6 +40,11 @@ public class GenresItemFragment extends Fragment {
         // Required empty public constructor
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mActivity= (MainActivity) getActivity();
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -45,6 +54,7 @@ public class GenresItemFragment extends Fragment {
         listView=layout.findViewById(R.id.lv_genres_item_detail);
         adapter=new GenresItemListAdapter();
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(mGenresItemClickListener);
         initView(layout);
         return layout;
 
@@ -59,6 +69,8 @@ public class GenresItemFragment extends Fragment {
         icoUp=view.findViewById(R.id.iv_genres_item_ico_up);
         genresName=view.findViewById(R.id.tv_genres_item_name);
         genrestSongs=view.findViewById(R.id.tv_genres_item_songs);
+        iv_back=view.findViewById(R.id.iv_back_genres);
+        iv_back.setOnClickListener(this);
         String amount= MusicUtils.map.get(musicIcoUp.getGenres());
         icoUp.setImageBitmap(icoUp==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
         String songs =String.format(AppliContext.sContext.getResources().getString(R.string.genres_songs_string),amount);
@@ -66,11 +78,41 @@ public class GenresItemFragment extends Fragment {
         genresName.setText(musicIcoUp.getGenres());
 
     }
+
+    /**
+     * 点击监听
+     */
+    private AdapterView.OnItemClickListener mGenresItemClickListener=new AdapterView.OnItemClickListener() {
+        @SuppressLint("LongLogTag")
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            mActivity.Visiable();
+            onPlay(i);
+            fragmentManager=getFragmentManager();
+            transaction = fragmentManager.beginTransaction();
+            GenresPlayFragment genresPlayFragment=new GenresPlayFragment();
+            transaction.replace(R.id.music_detail_fragment,genresPlayFragment).addToBackStack(null).commit();
+        }
+    };
+
+    private void onPlay(int position) {
+        int pos=mActivity.getLocalMusicService().itemPlay(position);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.iv_back_genres:
+                getActivity().onBackPressed();
+                break;
+        }
+    }
+
     public class GenresItemListAdapter extends BaseAdapter{
 
         class ViewHolder{
             ImageView ico;
-            TextView title;
+            TextView title,artist;
         }
 
         @Override
@@ -96,6 +138,7 @@ public class GenresItemFragment extends Fragment {
                 view=View.inflate(AppliContext.sContext,R.layout.genres_detail_item,null);
                 viewHolder.ico=view.findViewById(R.id.iv_genres_item_ico);
                 viewHolder.title=view.findViewById(R.id.tv_genres_item_list_title);
+                viewHolder.artist=view.findViewById(R.id.tv_genres_item_list_artist);
                 view.setTag(viewHolder);
             }else {
                 viewHolder= (ViewHolder) view.getTag();
@@ -104,7 +147,7 @@ public class GenresItemFragment extends Fragment {
             viewHolder.title.setText(music.getTitle());
             Bitmap ico= BitmapFactory.decodeFile(music.getImage());
             viewHolder.ico.setImageBitmap(ico==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
-
+            viewHolder.artist.setText(music.getArtist());
             return view;
         }
     }

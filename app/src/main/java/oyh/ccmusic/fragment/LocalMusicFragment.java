@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -55,6 +56,8 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private int currentPos=0;         // 记录当前正在播放的音乐
     private int currentPlayTime=0;
     private int currentAdd=0;
+    private int currentPosition=1;
+    private boolean mFlag = true;
     public LrcView lrcView; // 自定义歌词视图
     private MainActivity mActivity;
     private int mProgress;      //进度条
@@ -75,6 +78,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private Button nextBtn;
     private ImageButton playBtn;
     private Button preBtn;
+    private MyHandler mHandler = new MyHandler();
     private FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction transaction;
     private static SimpleDateFormat format = new SimpleDateFormat("mm:ss");
@@ -96,14 +100,34 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         mActivity = (MainActivity) activity;
     }
 
-    /**
-     * 在这里回调通知绑定服务
-     */
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
+    private  class MyHandler extends Handler {
 
+        @Override
+        public void handleMessage(Message msg) {
+            currentPosition= (int) MusicUtils.get(mActivity, "position", 0);
+            int totalTime=mActivity.getLocalMusicService().callTotalDate();
+            int currentTime = mActivity.getLocalMusicService().callCurrentTime();
+            currentPlayTime=currentTime;
+            seekBar.setMax(totalTime);
+            seekBar.setProgress(currentTime);
+            String current = format .format(new Date(currentTime));
+            String total = format.format(new Date(totalTime));
+            Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPosition).getImage());
+            mIcon.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
+                    getResources(), R.mipmap.img) : icon);
+            currentTimeTxt.setText(current);
+            totalTimeTxt.setText(total);
+                        seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
+            if (mActivity.getLocalMusicService().isPlayering()) {
+                playBtn.setImageResource(android.R.drawable.ic_media_pause);
+            } else {
+                playBtn.setImageResource(R.drawable.list_action_play);
+            }
+
+
+        }
+
+    }
 
     @Override
     public void onDestroy() {
@@ -145,6 +169,28 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         preBtn.setOnClickListener(this);
         mIcon.setOnClickListener(this);
     }
+
+    private void seekTime(){
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (mFlag) {
+                    if (mActivity.getLocalMusicService() != null) {
+                        mHandler.sendMessage(Message.obtain());
+
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }).start();
+
+    }
+
     /**
      * 进度条处理
      */
@@ -208,6 +254,8 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
         public void onItemClick(AdapterView<?> parent, View view, int position,
                                 long id) {
                 play(position);
+            int a=MusicUtils.sMusicList.size();
+            Log.e("mMusicItemClickListener", String.valueOf(a)+String.valueOf(position));
         }
     };
 
@@ -218,43 +266,42 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
     private void play(int position) {
         int pos=mActivity.getLocalMusicService().play(position);
         currentPos=position;
-        updatePanel(pos);
-
+        seekTime();
     }
 
     /**
      * 更新播放歌曲面板
-     * @param position
+     * @param
      */
-    private void updatePanel(int position) {
-        if (MusicUtils.sMusicList.isEmpty()||position<0) return;
-        int totalTime=mActivity.getLocalMusicService().callTotalDate();
-        int currentTime = mActivity.getLocalMusicService().callCurrentTime();
-        currentPlayTime=currentTime;
-        seekBar.setMax(totalTime);
-        seekBar.setProgress(currentTime);
-        String current = format .format(new Date(currentTime));
-        String total = format.format(new Date(totalTime));
-        Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(position).getImage());
-        mIcon.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
-                getResources(), R.mipmap.img) : icon);
-        currentTimeTxt.setText(current);
-        totalTimeTxt.setText(total);
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if(!isSeekBarChanging){
-                    seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
-                }
-            }
-        },0,100);
-        if (mActivity.getLocalMusicService().isPlayering()) {
-            playBtn.setImageResource(android.R.drawable.ic_media_pause);
-        } else {
-            playBtn.setImageResource(R.drawable.list_action_play);
-        }
-    }
+//    private void updatePanel(int position) {
+//        if (MusicUtils.sMusicList.isEmpty()||position<0) return;
+//        int totalTime=mActivity.getLocalMusicService().callTotalDate();
+//        int currentTime = mActivity.getLocalMusicService().callCurrentTime();
+//        currentPlayTime=currentTime;
+//        seekBar.setMax(totalTime);
+//        seekBar.setProgress(currentTime);
+//        String current = format .format(new Date(currentTime));
+//        String total = format.format(new Date(totalTime));
+//        Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPosition).getImage());
+//        mIcon.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
+//                getResources(), R.mipmap.img) : icon);
+//        currentTimeTxt.setText(current);
+//        totalTimeTxt.setText(total);
+//        timer = new Timer();
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                if(!isSeekBarChanging){
+//                    seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
+//                }
+//            }
+//        },0,100);
+//        if (mActivity.getLocalMusicService().isPlayering()) {
+//            playBtn.setImageResource(android.R.drawable.ic_media_pause);
+//        } else {
+//            playBtn.setImageResource(R.drawable.list_action_play);
+//        }
+//    }
 
     public void onMusicListChanged() {
         adapter.notifyDataSetChanged();
@@ -289,12 +336,7 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
                 fragmentManager=getFragmentManager();
                 transaction = fragmentManager.beginTransaction();
                 MusicDetailFragment musicDetailFragment=new MusicDetailFragment();
-//                transaction.replace(R.id.music_detail_fragment,musicDetailFragment).commit();
                 transaction.add(R.id.music_detail_fragment,musicDetailFragment).addToBackStack(null).commit();
-//            Intent intent = new Intent(mActivity,PlayActivity.class);
-//            intent.putExtra("CURRENT_PROGRESS", currentProgress);
-//            intent.putExtra("CURRENT_POSITION", currentPos);
-//            startActivity(intent);
                 break;
         }
     }
