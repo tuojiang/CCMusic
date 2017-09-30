@@ -269,39 +269,6 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
         seekTime();
     }
 
-    /**
-     * 更新播放歌曲面板
-     * @param
-     */
-//    private void updatePanel(int position) {
-//        if (MusicUtils.sMusicList.isEmpty()||position<0) return;
-//        int totalTime=mActivity.getLocalMusicService().callTotalDate();
-//        int currentTime = mActivity.getLocalMusicService().callCurrentTime();
-//        currentPlayTime=currentTime;
-//        seekBar.setMax(totalTime);
-//        seekBar.setProgress(currentTime);
-//        String current = format .format(new Date(currentTime));
-//        String total = format.format(new Date(totalTime));
-//        Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPosition).getImage());
-//        mIcon.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
-//                getResources(), R.mipmap.img) : icon);
-//        currentTimeTxt.setText(current);
-//        totalTimeTxt.setText(total);
-//        timer = new Timer();
-//        timer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                if(!isSeekBarChanging){
-//                    seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
-//                }
-//            }
-//        },0,100);
-//        if (mActivity.getLocalMusicService().isPlayering()) {
-//            playBtn.setImageResource(android.R.drawable.ic_media_pause);
-//        } else {
-//            playBtn.setImageResource(R.drawable.list_action_play);
-//        }
-//    }
 
     public void onMusicListChanged() {
         adapter.notifyDataSetChanged();

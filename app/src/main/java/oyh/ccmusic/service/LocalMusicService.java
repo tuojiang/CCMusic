@@ -58,7 +58,7 @@ public class LocalMusicService extends Service{
         int callCurrentTime();
         int play(int position);
         int itemPlay(int position);
-        int mlovePlay(int position);
+        int mlovePlay(int index,int position);
         int next();
         int itemNext();
         int mloveNext();
@@ -127,6 +127,7 @@ public class LocalMusicService extends Service{
 
         @Override
         public int play(int position) {
+            initLrc();
             if(position < 0) position = 0;
             if(position >= MusicUtils.sMusicList.size()) position = MusicUtils.sMusicList.size() - 1;
 
@@ -189,13 +190,15 @@ public class LocalMusicService extends Service{
         }
 
         @Override
-        public int mlovePlay(int position) {
+        public int mlovePlay(int index,int position) {
+            if (mPlayer!=null){
+                mPlayer.stop();
+            }
             if(position < 0) position = 0;
-            if(position >= MusicUtils.sMusicSQlList.size()) position = MusicUtils.sMusicSQlList.size() - 1;
-
+            if(position >= MusicUtils.sMusicList.size()) position = MusicUtils.sMusicList.size() - 1;
             try {
                 mPlayer.reset();
-                mPlayer.setDataSource(MusicUtils.sMusicSQlList.get(position).getMusicPath());
+                mPlayer.setDataSource(MusicUtils.sMusicList.get(index).getMusicPath());
                 mPlayer.prepareAsync();
                 mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
@@ -222,6 +225,7 @@ public class LocalMusicService extends Service{
 
         @Override
         public int next() {
+            initLrc();
             if(currentPos >= MusicUtils.sMusicList.size() - 1) {
                 return play(0);
             }
@@ -238,15 +242,20 @@ public class LocalMusicService extends Service{
 
         @Override
         public int mloveNext() {
+           int index = MusicUtils.queryMLoveToList(currentMLPosition+1);
             if(currentMLPosition >= MusicUtils.sMusicSQlList.size() - 1) {
-                return mlovePlay(0);
+           int indexinit = MusicUtils.queryMLoveToList(0);
+                MusicUtils.put("indexNext", indexinit);
+                return mlovePlay(indexinit,0);
             }
-            return mlovePlay(currentMLPosition + 1);
+                MusicUtils.put("indexNext", index);
+            return mlovePlay(index,currentMLPosition+1);
         }
 
 
         @Override
         public int pre() {
+            initLrc();
             if(currentPos <= 0) {
                 return play(MusicUtils.sMusicList.size() - 1);
             }
@@ -263,10 +272,14 @@ public class LocalMusicService extends Service{
 
         @Override
         public int mlovePre() {
+            int index = MusicUtils.queryMLoveToList(currentMLPosition-1);
             if(currentMLPosition <= 0) {
-                return mlovePlay(MusicUtils.sMusicSQlList.size() - 1);
+                int indexinit = MusicUtils.queryMLoveToList(currentMLPosition-1);
+                MusicUtils.put("indexPre", indexinit);
+                return mlovePlay(indexinit,MusicUtils.sMusicSQlList.size() - 1);
             }
-            return mlovePlay(currentMLPosition - 1);
+            MusicUtils.put("indexPre", index);
+            return mlovePlay(index,currentMLPosition-1);
         }
 
         /**
@@ -753,8 +766,9 @@ public class LocalMusicService extends Service{
 
     @Override
     public void onDestroy() {
-        if(mPlayer != null) mPlayer.release();
-        mPlayer = null;
+        if(mPlayer != null)
+            mPlayer.release();
+            mPlayer = null;
         super.onDestroy();
     }
 }

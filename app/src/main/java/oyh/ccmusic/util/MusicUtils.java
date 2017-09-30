@@ -36,8 +36,7 @@ public class MusicUtils {
     public static ArrayList<Music> commonList =  new ArrayList<>();
     // 存放item列表
     public static ArrayList<Music> itemCommonList =  new ArrayList<>();
-    public static ArrayList<Music> commonList2 =  new ArrayList<>();
-    public static ArrayList<Music> genresSongslList =  new ArrayList<>();
+    public static ArrayList<Music> myloveList =  new ArrayList<>();
     public static HashMap<String, String> map = new HashMap<String, String>();
     /**
      * 初始化歌曲列表
@@ -112,6 +111,7 @@ public class MusicUtils {
      */
     public static void initMusicSQLList(Context context){
         sMusicSQlList.addAll(LocalMusicUtils.getInstance(context).queryMusicSQL(sMusicSQlList));
+        myloveList.addAll(sMusicSQlList);
     }
     /**
      * 清空我喜欢列表
@@ -169,6 +169,30 @@ public class MusicUtils {
         itemCommonList.addAll(newList);
 
     }
+
+    /**
+     * 根据myloveList属性查询在sMusicList中位置
+     * @param position
+     * @return
+     */
+    public static int queryMLoveToList(int position){
+        if(position < 0) position = 0;
+        if(position >= myloveList.size()) position = myloveList.size() - 1;
+        String name=myloveList.get(position).getTitle();
+        int index=0;
+        for (int i=0;i<sMusicList.size();i++){
+            Music music= sMusicList.get(i);
+            if (name.equals(music.getTitle())) {
+                index = i;
+            }else {
+                continue;
+            }
+        }
+        return index;
+    }
+
+
+
     /**
      * 获取sd卡路径
      * @return

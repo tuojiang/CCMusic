@@ -32,6 +32,8 @@ import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 import oyh.ccmusic.util.MusicUtils;
 
+import static oyh.ccmusic.util.MusicUtils.queryMLoveToList;
+
 /**
  * A simple {@link Fragment} subclass.
  */
@@ -197,9 +199,19 @@ public class MusicMLDetailFragment extends Fragment implements View.OnClickListe
 //                } else {
 //                }
                 mActivity.getLocalMusicService().mlovePre();
+                int indexPre= (int) MusicUtils.get(mActivity,"indexPre",0);
+                mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,indexPre);
+                lrcView.setmLrcList(mLrcList);
+                lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                mHandler.post(mRunnable);
                 break;
             case R.id.bt_ml_next:
                 mActivity.getLocalMusicService().mloveNext();
+                int indexNext= (int) MusicUtils.get(mActivity,"indexNext",0);
+                mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,indexNext);
+                lrcView.setmLrcList(mLrcList);
+                lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                mHandler.post(mRunnable);
 //                if (CURRENTMODE == SHUFFLEMODE) {
 //                } else {
 //                }
@@ -216,9 +228,8 @@ public class MusicMLDetailFragment extends Fragment implements View.OnClickListe
     private void getMusicLrc(){
         /**歌词处理*/
         currentPosition= (int) MusicUtils.get(mActivity, "mlposition", 0);
-        Log.e("currentPosition","currentPosition="+currentPosition);
-//        mActivity.getLocalMusicService().
-        //TODO 歌词显示改为专辑旋转
+        int index= (int) MusicUtils.get(mActivity,"index",0);
+        mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,index);
         lrcView.setmLrcList(mLrcList);
         lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
         mHandler.post(mRunnable);

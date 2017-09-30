@@ -189,6 +189,10 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
                 break;
             case R.id.bt_pre:
                 mActivity.getLocalMusicService().isPlayPre();
+                mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition-1);
+                lrcView.setmLrcList(mLrcList);
+                lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                mHandler.post(mRunnable);
 //                if (CURRENTMODE == SHUFFLEMODE) {
 //                } else {
 //                }
@@ -196,6 +200,10 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
                 break;
             case R.id.bt_next:
                 mActivity.getLocalMusicService().isPlayNext();
+                mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition+1);
+                lrcView.setmLrcList(mLrcList);
+                lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                mHandler.post(mRunnable);
 //                if (CURRENTMODE == SHUFFLEMODE) {
 //                } else {
 //                }
@@ -213,7 +221,6 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
      */
     private void getMusicLrc(){
         /**歌词处理*/
-        //TODO 切换歌词不同步
         currentPosition= (int) MusicUtils.get(mActivity, "position", 0);
         mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition);
         lrcView.setmLrcList(mLrcList);
