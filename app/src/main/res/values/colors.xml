@@ -12,4 +12,9 @@
     <color name="red">#FFFF1826</color>
     <color name="main_dark">#FF535353</color>
     <color name="black">#121111</color>
+    <color name="white_text">#fafafa</color>
+    <color name="redred">#F44336</color>
+    <color name="red_dark">#C62828</color>
+    <color name="red_trans">#99F44336</color>
+
 </resources>

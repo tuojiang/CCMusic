@@ -1,6 +1,7 @@
 package oyh.ccmusic.activity;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothHeadset;
@@ -15,6 +16,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.ActivityCompat;
@@ -23,6 +25,8 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -53,6 +57,7 @@ import oyh.ccmusic.util.MusicUtils;
  */
 public class MainActivity extends FragmentActivity {
 
+    private MainActivity mActivity;
     private TextView localMTextview;
     private TextView netMTextview;
     private TextView myloveMTextview;
@@ -82,11 +87,19 @@ public class MainActivity extends FragmentActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+//        AppCompatActivity mAppCompatActivity = mActivity;
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle("我的乐库");//设置主标题
+//        setSupportActionBar(toolbar);
+//        getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        //绑定服务
         bindService(new Intent(this, LocalMusicService.class), localplayServiceConnection,
                 Context.BIND_AUTO_CREATE);
         //初始化监听
