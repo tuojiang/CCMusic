@@ -54,6 +54,7 @@ public class LocalMusicService extends Service{
      */
     public interface CallBack{
         boolean isPlayerMusic();
+        boolean isPlay();
         int callTotalDate();
         int callCurrentTime();
         int play(int position);
@@ -97,6 +98,15 @@ public class LocalMusicService extends Service{
         @Override
         public boolean isPlayerMusic() {
             return playerMusic();
+        }
+
+        @Override
+        public boolean isPlay() {
+            if (mPlayer!=null){
+                return true;
+            }else {
+                return false;
+            }
         }
 
         /**

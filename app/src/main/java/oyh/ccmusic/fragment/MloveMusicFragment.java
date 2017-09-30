@@ -1,6 +1,7 @@
 package oyh.ccmusic.fragment;
 
 
+import android.Manifest;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -29,6 +30,7 @@ public class MloveMusicFragment extends Fragment{
     private MyloveMusicListAdapter adapter;
     private FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction transaction;
+
     public MloveMusicFragment() {
     }
 

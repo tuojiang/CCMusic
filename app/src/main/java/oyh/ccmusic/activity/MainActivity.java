@@ -2,6 +2,9 @@ package oyh.ccmusic.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothHeadset;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -30,6 +33,7 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -101,7 +105,7 @@ public class MainActivity extends FragmentActivity {
         InitImageView();
 
         //权限获取
-        verifyStoragePermissions(this);
+//        verifyStoragePermissions(this);
 
         //注册广播
         registerReceiver();
@@ -125,6 +129,11 @@ public class MainActivity extends FragmentActivity {
             callBack=null;
         }
     };
+
+    private void observerHeadSet(){
+
+    }
+
     /**
      * 初始化监听
      */
@@ -181,6 +190,11 @@ public class MainActivity extends FragmentActivity {
         filter.addAction(Intent.ACTION_MEDIA_SCANNER_FINISHED);
         filter.addDataScheme("file");
         registerReceiver(mScanSDCardReceiver, filter);
+
+        IntentFilter headSetFilter = new IntentFilter();
+        headSetFilter.addAction(Intent.ACTION_HEADSET_PLUG);
+        headSetFilter.addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
+        registerReceiver(mHeadSetReceiver, headSetFilter);
     }
     /**
      * 获取音乐播放服务
@@ -421,10 +435,40 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onDestroy() {
         unregisterReceiver(mScanSDCardReceiver);
+        unregisterReceiver(mHeadSetReceiver);
         super.onDestroy();
 
     }
-
+    /**
+     * 注册耳机拔插的广播接收者
+     */
+    private BroadcastReceiver mHeadSetReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED.equals(action)) {
+                BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+                if (BluetoothProfile.STATE_DISCONNECTED == adapter.getProfileConnectionState(BluetoothProfile.HEADSET)) {
+                    //蓝牙耳机现在断开连接
+                }
+            } else if ("android.intent.action.HEADSET_PLUG".equals(action)) {
+                if (intent.hasExtra("state")){
+                    if (intent.getIntExtra("state", 0) == 0){
+                        //耳机拔出
+                        Toast.makeText(context, "耳机拔出", Toast.LENGTH_LONG).show();
+                        if (callBack!=null) {
+                            callBack.isPlayerMusic();
+                        }
+                    }else if (intent.getIntExtra("state", 0) == 1){
+                        //耳机插入
+                        Toast.makeText(context, "耳机插入", Toast.LENGTH_LONG).show();
+                        if (callBack!=null) {
+                            callBack.isPlayerMusic();
+                        }
+                    }
+                }
+            }
+        }
+    };
 
     /**
      * 注册扫描完毕的广播接收者
