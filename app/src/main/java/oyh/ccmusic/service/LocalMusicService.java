@@ -61,7 +61,6 @@ public class LocalMusicService extends Service{
     private static final String MUSIC_PLAY_ACTION="appwidget.action.musicplay";
     private static final String MUSIC_NEXT_ACTION="appwidget.action.musicnext";
     private static final String MUSIC_PRE_ACTION="appwidget.action.musicpre";
-    private  List<Music> widgetList;
     private MyBinder myBinder=new MyBinder();
 
     /**

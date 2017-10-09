@@ -3,6 +3,8 @@ package oyh.ccmusic.fragment;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
@@ -107,6 +109,9 @@ public class GenresPlayFragment extends Fragment implements View.OnClickListener
             int totalTime=music.getLength();
             seekBar.setMax(music.getLength());
             String total = format.format(new Date(totalTime));
+            Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPosition).getImage());
+            coverImage.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
+                    getResources(), R.mipmap.img) : icon);
             totalTimeTxt.setText(total);
             currentTimeTxt.setText(currentProgress);
 
