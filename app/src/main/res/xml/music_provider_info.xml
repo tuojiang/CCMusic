@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/music_app_widget"
+    android:minHeight="26dip"
+    android:minWidth="250dip"
+    android:resizeMode="horizontal|vertical"
+    android:previewImage="@mipmap/img"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen" >
+
+</appwidget-provider>

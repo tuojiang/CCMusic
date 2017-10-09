@@ -1,11 +1,18 @@
 package oyh.ccmusic.service;
 
 import android.annotation.TargetApi;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
@@ -17,6 +24,7 @@ import android.os.Parcelable;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,7 +32,10 @@ import java.util.List;
 import java.util.Random;
 
 import oyh.ccmusic.Provider.DBHelper;
+import oyh.ccmusic.Provider.MusicWidgetProvider;
 import oyh.ccmusic.Provider.PlayListContentProvider;
+import oyh.ccmusic.R;
+import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
@@ -39,7 +50,7 @@ public class LocalMusicService extends Service{
     private ArrayList<Music> musicplaylist;
     private ContentResolver mResolver;
     private MediaPlayer mPlayer;
-    private int currentPos;         // 记录当前正在播放的音乐
+    private int currentPos=0;         // 记录当前正在播放的音乐
     private int currentMLPosition;         // 记录我喜欢列表当前正在播放的音乐
     private int nextPlay;
     private LrcProcess mLrcProcess; //歌词处理
@@ -47,6 +58,10 @@ public class LocalMusicService extends Service{
     private int index = 0;          //歌词检索值
     private int currentTime;		//当前播放进度
     private int duration;			//播放长度
+    private static final String MUSIC_PLAY_ACTION="appwidget.action.musicplay";
+    private static final String MUSIC_NEXT_ACTION="appwidget.action.musicnext";
+    private static final String MUSIC_PRE_ACTION="appwidget.action.musicpre";
+    private  List<Music> widgetList;
     private MyBinder myBinder=new MyBinder();
 
     /**
@@ -150,6 +165,7 @@ public class LocalMusicService extends Service{
                     public void onPrepared(MediaPlayer mp) {
                         // 装载完毕回调
                         start();
+                        updateAppWidget();
                     }
                 });
                 mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -298,36 +314,14 @@ public class LocalMusicService extends Service{
         @Override
         public void start() {
             mPlayer.start();
+            updateAppWidget();
         }
 
         @Override
         public int playMyLove(int position) {
             currentMLPosition = position;
             MusicUtils.put("mlposition", currentMLPosition);
-//            initMLMusic();
             playerMusic();
-//            if(position < 0) position = 0;
-//            if(position >= MusicUtils.sMusicList.size()) position = MusicUtils.sMusicList.size() - 1;
-//
-//            try {
-//                mPlayer.reset();
-//                Log.e("playMyLove","reset");
-//                mPlayer.setDataSource(MusicUtils.sMusicSQlList.get(currentMLPosition).getMusicPath());
-//                Log.e("playMyLove","list="+MusicUtils.sMusicSQlList.get(currentMLPosition).getMusicPath());
-//
-//                mPlayer.prepare();
-//                Log.e("playMyLove","prepare");
-//
-//                mPlayer.start();
-//                Log.e("playMyLove","start");
-
-//                start();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-
-//            currentMLPosition = position;
-//            MusicUtils.put("mlposition", currentMLPosition);
             return currentMLPosition;
         }
 
@@ -379,8 +373,6 @@ public class LocalMusicService extends Service{
                 currentPos=MusicUtils.sMusicList.size()-1;
             }
             initLrc();
-//            initMusic();
-//            playerMusic();
             next();
         }
 
@@ -749,11 +741,10 @@ public class LocalMusicService extends Service{
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        currentPos = intent.getIntExtra("CURRENT_POSITION", 0);
         myBinder.initLrc();
         initMusic();
-//        playerMusic();
-
+        //更新appWidget
+        updateAppWidget();
 
         return super.onStartCommand(intent, flags, startId);
 
@@ -763,10 +754,86 @@ public class LocalMusicService extends Service{
     public void onCreate() {
         super.onCreate();
         Log.d("LocalMusicService", "onCreate");
+        MusicUtils.initMusicList(AppliContext.sContext.getApplicationContext());
         mPlayer = new MediaPlayer();
         mResolver = getContentResolver();
+        //注册广播
+        IntentFilter filter=new IntentFilter(MUSIC_PLAY_ACTION);
+        filter.addAction(MUSIC_NEXT_ACTION);
+        filter.addAction(MUSIC_PRE_ACTION);
+        registerReceiver(new MusicReceiver(), filter);
     }
+    /**
+     * 更新appWidget
+     */
+    public void updateAppWidget()
+    {
+        AppWidgetManager appWidgetManager=AppWidgetManager.getInstance(this);
 
+        RemoteViews remoteViews=new RemoteViews(this.getPackageName(),R.layout.music_app_widget);
+
+        String artistAndSong=MusicUtils.sMusicList.get(currentPos).getTitle()+"-"+MusicUtils.sMusicList.get(currentPos).getArtist();
+        //设置歌曲名和歌手
+        remoteViews.setTextViewText(R.id.tv_widget_music_name,artistAndSong);
+        Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPos).getImage());
+        if (icon==null){
+            icon =BitmapFactory.decodeResource(getResources(), R.mipmap.img);
+        }
+        Intent playIntent=new Intent(MUSIC_PLAY_ACTION);
+        if (mPlayer!=null)
+        {
+            //根据音乐是否播放，更改imageView的图片
+            remoteViews.setImageViewBitmap(R.id.iv_widget_image_thumb, icon);
+            //根据音乐是否播放，更改btn的图片
+            remoteViews.setInt(R.id.widget_play_btn, "setBackgroundResource", mPlayer.isPlaying() ? R.mipmap.ic_pause : R.mipmap.ic_play);
+
+        }
+        //点击开启广播
+        PendingIntent playBroad=PendingIntent.getBroadcast(this,0,playIntent,0);
+        remoteViews.setOnClickPendingIntent(R.id.widget_play_btn, playBroad);
+
+        Intent nextIntent=new Intent(MUSIC_NEXT_ACTION);
+        PendingIntent nextBroad= PendingIntent.getBroadcast(this,0,nextIntent,0);
+        remoteViews.setOnClickPendingIntent(R.id.widget_next_btn, nextBroad);
+
+        Intent preIntent=new Intent(MUSIC_PRE_ACTION);
+        PendingIntent preBroad= PendingIntent.getBroadcast(this,0,preIntent,0);
+        remoteViews.setOnClickPendingIntent(R.id.widget_pre_btn, preBroad);
+
+        ComponentName componentName=new ComponentName(this,MusicWidgetProvider.class);
+        appWidgetManager.updateAppWidget(componentName, remoteViews);
+    }
+    /**
+     * 接收广播，处理对应请求
+     */
+    public class MusicReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(MUSIC_PLAY_ACTION))
+            {
+                //当mediaPlayer为null时，表示当前未播放音乐
+                if (mPlayer==null)
+                {
+                    myBinder.play(currentPos);
+                }else {
+                    //当音乐正在播放时，暂停播放
+                    if (mPlayer.isPlaying())
+                    {
+                        mPlayer.pause();
+                    }else {
+                        mPlayer.start();
+                    }
+                }
+
+            }else if (intent.getAction().equals(MUSIC_NEXT_ACTION)) {
+
+                myBinder.isPlayNext();
+            }else if (intent.getAction().equals(MUSIC_PRE_ACTION)){
+
+                myBinder.isPlayPre();
+            }
+        }
+    }
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -780,5 +847,6 @@ public class LocalMusicService extends Service{
             mPlayer.release();
             mPlayer = null;
         super.onDestroy();
+        unregisterReceiver(new MusicReceiver());
     }
 }

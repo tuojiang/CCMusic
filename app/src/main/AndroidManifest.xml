@@ -47,6 +47,14 @@
             android:authorities="oyh.ccmusic.PlayListContentProvider"
             android:enabled="true"
             android:exported="true"></provider>
+        <receiver android:name=".Provider.MusicWidgetProvider">
+            <intent-filter >
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/music_provider_info"
+                />
+        </receiver>
     </application>
 
 </manifest>

@@ -295,7 +295,6 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
                 break;
             case R.id.next_btn:
                 mActivity.getLocalMusicService().isPlayNext();
-                //TODO 下一曲的专辑封面没有更新
                 break;
 
             case R.id.music_list_icon:

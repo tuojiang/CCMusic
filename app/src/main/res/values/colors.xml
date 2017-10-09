@@ -16,5 +16,5 @@
     <color name="redred">#F44336</color>
     <color name="red_dark">#C62828</color>
     <color name="red_trans">#99F44336</color>
-
+    <color name="colorContract">#09C</color>
 </resources>
