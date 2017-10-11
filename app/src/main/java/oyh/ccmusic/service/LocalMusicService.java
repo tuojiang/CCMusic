@@ -753,7 +753,7 @@ public class LocalMusicService extends Service{
     public void onCreate() {
         super.onCreate();
         Log.d("LocalMusicService", "onCreate");
-        MusicUtils.initMusicList(AppliContext.sContext.getApplicationContext());
+//        MusicUtils.initMusicList(AppliContext.sContext.getApplicationContext());
         mPlayer = new MediaPlayer();
         mResolver = getContentResolver();
         //注册广播
@@ -771,10 +771,10 @@ public class LocalMusicService extends Service{
 
         RemoteViews remoteViews=new RemoteViews(this.getPackageName(),R.layout.music_app_widget);
 
-        String artistAndSong=MusicUtils.sMusicList.get(currentPos).getTitle()+"-"+MusicUtils.sMusicList.get(currentPos).getArtist();
+        String artistAndSong=MusicUtils.sMusicList.get(currentPos+1).getTitle()+"-"+MusicUtils.sMusicList.get(currentPos+1).getArtist();
         //设置歌曲名和歌手
         remoteViews.setTextViewText(R.id.tv_widget_music_name,artistAndSong);
-        Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPos).getImage());
+        Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPos+1).getImage());
         if (icon==null){
             icon =BitmapFactory.decodeResource(getResources(), R.mipmap.img);
         }
@@ -813,7 +813,7 @@ public class LocalMusicService extends Service{
                 //当mediaPlayer为null时，表示当前未播放音乐
                 if (mPlayer==null)
                 {
-                    myBinder.play(currentPos);
+                    myBinder.play(currentPos+1);
                 }else {
                     //当音乐正在播放时，暂停播放
                     if (mPlayer.isPlaying())

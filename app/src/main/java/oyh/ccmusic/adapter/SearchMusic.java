@@ -107,19 +107,18 @@ public class SearchMusic {
 					if(info.attr("href").equals("#") && !TextUtils.isEmpty(info.attr("data-songdata"))) {
 						continue TAG;
 					}
-					
-					// 歌曲链接
+					// 歌曲链接 http://music.baidu.com/song/554719861
 					if(info.attr("href").startsWith("/song")) {
 						searchResult.setMusicName(info.text());
 						searchResult.setUrl(info.attr("href"));
 					}
-					
-					// 歌手链接
-					if(info.attr("href").startsWith("/data")) {
+
+					// 歌手链接	http://music.baidu.com/data/artist/redirect?id=5669842
+					if(info.attr("href").startsWith("/data/artist")) {
 						searchResult.setArtist(info.text());
 					}
 					
-					// 专辑链接
+					// 专辑链接	http://music.baidu.com/album/554719801
 					if(info.attr("href").startsWith("/album")) {
 						searchResult.setAlbum(info.text().replaceAll("《|》", ""));
 					}

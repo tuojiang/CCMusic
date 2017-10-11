@@ -52,6 +52,7 @@ import oyh.ccmusic.fragment.MloveMusicFragment;
 import oyh.ccmusic.fragment.NetMusicFragment;
 import oyh.ccmusic.service.LocalMusicService;
 import oyh.ccmusic.util.MusicUtils;
+
 /**
  * Created by yihong.ou on 17-9-7.
  */
@@ -93,9 +94,10 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-//        AppCompatActivity mAppCompatActivity = mActivity;
+//        AppCompatActivity mAppCompatActivity = new AppCompatActivity();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle("我的乐库");//设置主标题
+//        mAppCompatActivity.setSupportActionBar(toolbar);
 //        setSupportActionBar(toolbar);
 //        getActionBar().setDisplayHomeAsUpEnabled(true);
 

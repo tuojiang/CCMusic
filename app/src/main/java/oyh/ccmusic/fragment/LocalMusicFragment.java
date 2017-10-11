@@ -255,7 +255,6 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
                                 long id) {
                 play(position);
             int a=MusicUtils.sMusicList.size();
-            Log.e("mMusicItemClickListener", String.valueOf(a)+String.valueOf(position));
         }
     };
 

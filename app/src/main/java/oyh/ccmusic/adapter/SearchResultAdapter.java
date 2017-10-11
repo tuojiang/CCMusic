@@ -1,6 +1,7 @@
 package oyh.ccmusic.adapter;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -43,7 +44,7 @@ public class SearchResultAdapter extends BaseAdapter{
             view=View.inflate(AppliContext.sContext, R.layout.search_result_item,null);
             holder=new ViewHolder();
             holder.title=view.findViewById(R.id.tv_search_result_title);
-            holder.artist=view.findViewById(R.id.tv_music_list_artist);
+            holder.artist=view.findViewById(R.id.tv_search_result_artist);
             holder.album=view.findViewById(R.id.tv_search_result_album);
             view.setTag(holder);
         }else {
@@ -53,7 +54,6 @@ public class SearchResultAdapter extends BaseAdapter{
         String album = mSearchResult.get(i).getAlbum();
 
         holder.title.setText(mSearchResult.get(i).getMusicName());
-
         if(!TextUtils.isEmpty(artist)) holder.artist.setText(artist);
         else holder.artist.setText("未知艺术家");
 
