@@ -72,6 +72,7 @@ public class LocalMusicService extends Service{
         int callTotalDate();
         int callCurrentTime();
         int play(int position);
+        void playNet(String file);
         int itemPlay(int position);
         int mlovePlay(int index,int position);
         int next();
@@ -180,6 +181,31 @@ public class LocalMusicService extends Service{
             currentPos = position-1;
             MusicUtils.put("position", position);
             return currentPos;
+        }
+
+        @Override
+        public void playNet(String file) {
+            try {
+                mPlayer.reset();
+                mPlayer.setDataSource(file);
+                mPlayer.prepareAsync();
+                mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        // 装载完毕回调
+                        start();
+                        updateAppWidget();
+                    }
+                });
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         @TargetApi(Build.VERSION_CODES.JELLY_BEAN)

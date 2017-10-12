@@ -3,18 +3,17 @@ package oyh.ccmusic.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -37,18 +36,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import oyh.ccmusic.R;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.adapter.SearchMusic;
 import oyh.ccmusic.adapter.SearchResultAdapter;
-import oyh.ccmusic.domain.Music;
 import oyh.ccmusic.domain.SearchResult;
 import oyh.ccmusic.util.MobileUtils;
-import oyh.ccmusic.util.MusicUtils;
 
 /**
  * 网络歌曲列表
@@ -75,7 +70,10 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
     private boolean hasMoreData = true;
     private String adress;//歌词地址
     private String songAdress;//歌曲地址
-
+    private String file_link;
+    private String netLrc;
+    private String getDate;
+    private int file_duration,file_size;
     public NetMusicFragment() {
     }
 
@@ -116,6 +114,8 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
         mSearchResultListView.setAdapter(mSearchResultAdapter);
         mSearchResultListView.setOnScrollListener(mListViewScrollListener);
         mSearchResultListView.setOnItemClickListener(mResultItemClickListener);
+        mSearchResultListView.setOnItemLongClickListener(longClickListener);
+
     }
     /**
      * 列表中每一列的点击时间监听器
@@ -128,18 +128,36 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
 
         return footerView;
     }
+
+    /**
+     * 长按事件监听
+     */
+    private AdapterView.OnItemLongClickListener longClickListener=new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+            showDownloadDialog(i);
+            return true;
+        }
+    };
+    /**
+     * 点击事件监听
+     */
     private AdapterView.OnItemClickListener mResultItemClickListener = new AdapterView.OnItemClickListener() {
         @SuppressLint("LongLogTag")
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position,
                                 long id) {
             if(position >= mResultData.size() || position < 0) return;
+            String songid=mResultData.get(position).getUrl().substring(6);
+            currentPos=songid;
             play(currentPos);
-
+            netLrc=getAdress(songid);//获取歌词
+            Log.e("currentPos", "currentPos="+currentPos);
             //TODO 下载音乐
-//            showDownloadDialog(position);
         }
     };
+
+
     /**
      * 底部对话框
      * @param position
@@ -197,67 +215,42 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
      * @param songid
      */
     private void play(final String songid) {
-//        int pos=mActivity.getLocalMusicService().play(position);
-//        String songid=mResultData.get(position).getUrl().substring(6);
-//        String playUrl="baidu.ting.song.playAAC&songid="+songid;
-        String playUrl="http://yinyueshiting.baidu.com/data2/music/4e5d6889deedd36836df3138fac04ea9/544055863/544055730151200128.mp3";
-        Log.e("play", "songid="+songid);
-        try {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
                     HttpURLConnection connection;
-                    URL url = new URL("http://tingapi.ting.baidu.com/v1/restserver/ting?from=webapp_music&callback=&format=json&method=baidu.ting.song.play&songid="+songid);
+                    URL url = new URL("http://tingapi.ting.baidu.com/v1/restserver/ting?format=json&calback=&from=webapp_music&method=baidu.ting.song.play&songid="+songid);
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setConnectTimeout(60*1000);
                     connection.setReadTimeout(60*1000);
                     connection.connect();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     String s;
-                    if ((s=reader.readLine())!=null){
+                    while ((s=reader.readLine())!=null){
                         s = s.replace("\\","");//去掉\\
-                        try {
-                            JSONObject object = new JSONObject(s);
-                            Iterator iterator = object.keys();
-                            while(iterator.hasNext()){
-                                String key = iterator.next().toString();
-                                String value = object.getString(key);
-                            Log.e("value", "value="+value);
-
-
-                            }
-//                            JSONObject object1 = object.getJSONObject("data");
-//                            Log.e("object1", String.valueOf(object1));
-//                            JSONArray array = object1.getJSONArray("songList");
-//                            JSONObject object2 = array.getJSONObject(0);
-//                            songAdress = object2.getString("songLink");
-                            Log.e("tagadress",songAdress);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                        s = s.replace("\\n","");//去掉换行符
+                        s = s.replace("\"0\":\"129|-1\",\"1\":\"-1|-1\"","\\\"0\\\":\\\"0|0\\\",\\\"1\\\":\\\"0|0\\\"");//修正json格式
+                        getDate=s;
+                        Log.e("s", "s="+s);
                     }
-                } catch (IOException e) {
+                    try {
+                        JSONObject object = new JSONObject(getDate);
+                        JSONObject bitrateJSON = object.getJSONObject("bitrate");
+                        file_link = bitrateJSON.getString("file_link");
+                        Log.e("s", "s="+file_link);
+                        file_size = bitrateJSON.optInt("file_size");
+                        file_duration = bitrateJSON.optInt("file_duration");
+                        mActivity.getLocalMusicService().playNet(file_link);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
-        try {
-            mPlayer.reset();
-            mPlayer.setDataSource(songAdress);
-            mPlayer.prepareAsync();
-            mPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    // 装载完毕回调
-                    mPlayer.start();
-                }
-            });
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-//                    next();
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            }
+        }).start();
     }
-
     private AbsListView.OnScrollListener mListViewScrollListener = new AbsListView.OnScrollListener() {
         @Override
         public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -289,68 +282,73 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
         mSearchProgressBar.setVisibility(View.VISIBLE);
         mSearchResultListView.setVisibility(View.GONE);
             startSearch(content);
-
 //            query2(content);
         }
 
     }
+//    这种方式也可以解析得到相应数据
+//    private void query2(final String title){
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    HttpURLConnection connection;
+//                    String finalTitle = URLEncoder.encode(title,"utf-8");
+//                    URL url = new URL("http://tingapi.ting.baidu.com/v1/restserver/ting?from=webapp_music&method=baidu.ting.search.catalogSug&format=json&callback=&query="+finalTitle);
+//                    connection = (HttpURLConnection) url.openConnection();
+//                    connection.setConnectTimeout(60*1000);
+//                    connection.setReadTimeout(60*1000);
+//                    connection.connect();
+//                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//                    String s;
+//                    if ((s=reader.readLine())!=null)
+//                        Log.e("s", "s="+s);
+//                    doJson(s);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
+//    }
+//
+//
+//    public SearchResult doJson(String json){
+//        SearchResult song = null;
+//        JSONObject jsonObject = null;
+//        try {
+//            //去掉括号
+//            json = json.replace("(","");
+//            json = json.replace(")","");
+//            jsonObject = new JSONObject(json);
+//            JSONArray array = new JSONArray(jsonObject.getString("song"));
+//            for (int i=0;i<array.length();i++){
+//                JSONObject object = array.getJSONObject(i);
+//                String songname = object.getString("songname");
+//                String artistname = object.getString("artistname");
+//                String songid = object.getString("songid");
+//                currentPos =songid;
+//                String adress = getAdress(songid);
+//                SearchResult song1 = new SearchResult();
+//                Log.e("tag",songname+"  "+artistname+"  "+songid);
+//
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return song;
+//    }
 
-    private void query2(final String title){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HttpURLConnection connection;
-                    String finalTitle = URLEncoder.encode(title,"utf-8");
-                    URL url = new URL("http://tingapi.ting.baidu.com/v1/restserver/ting?from=webapp_music&method=baidu.ting.search.catalogSug&format=json&callback=&query="+finalTitle);
-                    connection = (HttpURLConnection) url.openConnection();
-                    connection.setConnectTimeout(60*1000);
-                    connection.setReadTimeout(60*1000);
-                    connection.connect();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String s;
-                    if ((s=reader.readLine())!=null)
-                        doJson(s);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-    }
-
-
-    public SearchResult doJson(String json){
-        SearchResult song = null;
-        JSONObject jsonObject = null;
-        try {
-            //去掉括号
-            json = json.replace("(","");
-            json = json.replace(")","");
-            jsonObject = new JSONObject(json);
-            JSONArray array = new JSONArray(jsonObject.getString("song"));
-            for (int i=0;i<array.length();i++){
-                JSONObject object = array.getJSONObject(i);
-                String songname = object.getString("songname");
-                String artistname = object.getString("artistname");
-                String songid = object.getString("songid");
-                currentPos =songid;
-                String adress = getAdress(songid);
-                SearchResult song1 = new SearchResult();
-                Log.e("tag",songname+"  "+artistname+"  "+songid);
-
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return song;
-    }
+    /**
+     * 获取歌词地址
+     * @param songid
+     * @return
+     */
     public String getAdress(final String songid){
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     HttpURLConnection connection;
-                    //URL url = new URL("http://api.5288z.com/weixin/musicapi.php?q="+finalTitle);
                     URL url = new URL("http://ting.baidu.com/data/music/links?songIds="+songid);
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setConnectTimeout(60*1000);
