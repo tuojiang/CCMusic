@@ -25,6 +25,7 @@ import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -200,7 +201,7 @@ public class LocalMusicService extends Service{
                 mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mediaPlayer) {
-
+                        mPlayer.setLooping(true);//单曲循环播放
                     }
                 });
             } catch (Exception e) {

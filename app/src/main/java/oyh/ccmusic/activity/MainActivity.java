@@ -256,7 +256,7 @@ public class MainActivity extends FragmentActivity {
      * 初始化页卡内容区
      */
     private void InitViewPager() {
-        mviewPager= (ViewPager) findViewById(R.id.vPager);
+        mviewPager= findViewById(R.id.vPager);
         mviewPager.setAdapter(new MFragmentPagerAdapter(fragmentManager,fragmentArrayList));
         mviewPager.setOffscreenPageLimit(5);
         mviewPager.setCurrentItem(0);
@@ -303,12 +303,12 @@ public class MainActivity extends FragmentActivity {
         linearLayout1=findViewById(R.id.linearLayout2);
         context=getApplicationContext();
 
-        localMTextview= (TextView) findViewById(R.id.localmusic_tv);
+        localMTextview= findViewById(R.id.localmusic_tv);
         albumTextview=findViewById(R.id.albummusic_tv);
         artistTextview=findViewById(R.id.artistmusic_tv);
-        myloveMTextview= (TextView) findViewById(R.id.mylovemusic_tv);
+        myloveMTextview= findViewById(R.id.mylovemusic_tv);
         genresTextview=findViewById(R.id.genresmusic_tv);
-        netMTextview= (TextView) findViewById(R.id.netmusic_tv);
+        netMTextview= findViewById(R.id.netmusic_tv);
 
 
         localMTextview.setOnClickListener(new MyOnClickListener(0));

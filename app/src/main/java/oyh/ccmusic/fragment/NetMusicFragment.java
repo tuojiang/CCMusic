@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
@@ -36,14 +37,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 
 import oyh.ccmusic.R;
+import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.adapter.SearchMusic;
 import oyh.ccmusic.adapter.SearchResultAdapter;
 import oyh.ccmusic.domain.SearchResult;
 import oyh.ccmusic.util.MobileUtils;
+import oyh.ccmusic.util.MultipartThreadDownloador;
+import oyh.ccmusic.util.MusicUtils;
 
 /**
  * 网络歌曲列表
@@ -62,6 +68,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
     private View mPopView;
     private PopupWindow mPopupWindow;
     private String currentPos;         // 记录当前正在播放的音乐
+    private String songLongId;         // 记录当前正在播放的音乐
     private MediaPlayer mPlayer=new MediaPlayer();
     private SearchResultAdapter mSearchResultAdapter;
     private ArrayList<SearchResult> mResultData = new ArrayList<SearchResult>();
@@ -71,6 +78,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
     private String adress;//歌词地址
     private String songAdress;//歌曲地址
     private String file_link;
+    private String songTitle;
     private String netLrc;
     private String getDate;
     private int file_duration,file_size;
@@ -135,6 +143,10 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
     private AdapterView.OnItemLongClickListener longClickListener=new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+            String songid=mResultData.get(i).getUrl().substring(6);
+            songLongId=songid;
+            getDownloadUrl(songLongId);//获取歌曲文件的地址
+            getAdress(songLongId);//获取歌曲歌词的地址
             showDownloadDialog(i);
             return true;
         }
@@ -151,9 +163,8 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
             String songid=mResultData.get(position).getUrl().substring(6);
             currentPos=songid;
             play(currentPos);
-            netLrc=getAdress(songid);//获取歌词
+            getAdress(songid);//获取歌词
             Log.e("currentPos", "currentPos="+currentPos);
-            //TODO 下载音乐
         }
     };
 
@@ -164,7 +175,6 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
      */
     private void showDownloadDialog(final int position) {
         mActivity.onPopupWindowShown();
-
         if(mPopupWindow == null) {
             mPopView = View.inflate(mActivity, R.layout.download_pop_layout, null);
 
@@ -185,8 +195,8 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
         mPopView.findViewById(R.id.tv_pop_download).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                GetDownloadInfo.getInstance().setListener(mDownloadUrlListener)
-//                        .parse(position, mResultData.get(position).getUrl());
+                downloadSong();//歌曲下载
+//                downloadSongLrc();//歌词下载
                 dismissDialog();
             }
         });
@@ -210,6 +220,93 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
         }
     }
 
+    /**
+     * 歌词下载
+     */
+    private void downloadSongLrc(){
+        final String appHome = Environment.getExternalStorageDirectory().getAbsolutePath()+"/CCMusic";
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try
+                {
+
+                    new MultipartThreadDownloador(adress,
+                            appHome, songTitle+".lrc", 2).download();
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 歌曲下载
+     */
+    private void downloadSong(){
+        final String appHome = Environment.getExternalStorageDirectory().getAbsolutePath()+"/CCMusic";
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try
+                {
+                    new MultipartThreadDownloador(file_link,
+                            appHome, songTitle+".mp3", 2).download();
+                } catch (IOException e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 获取要下载的歌曲URL
+     * @param songid
+     */
+    private void getDownloadUrl(final String songid) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    HttpURLConnection connection;
+                    URL url = new URL("http://tingapi.ting.baidu.com/v1/restserver/ting?format=json&calback=&from=webapp_music&method=baidu.ting.song.play&songid="+songid);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setConnectTimeout(60*1000);
+                    connection.setReadTimeout(60*1000);
+                    connection.connect();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String s;
+                    while ((s=reader.readLine())!=null){
+                        s = s.replace("\\","");//去掉\\
+                        s = s.replace("\\n","");//去掉换行符
+                        s = s.replace("\"0\":\"129|-1\",\"1\":\"-1|-1\"","\\\"0\\\":\\\"0|0\\\",\\\"1\\\":\\\"0|0\\\"");//修正json格式
+                        getDate=s;
+                        Log.e("s", "s="+s);
+                    }
+                    try {
+                        JSONObject object = new JSONObject(getDate);
+                        JSONObject bitrateJSON = object.getJSONObject("bitrate");
+                        JSONObject songinfoJSON = object.getJSONObject("songinfo");
+                        file_link = bitrateJSON.getString("file_link");
+                        MusicUtils.put("filesize",bitrateJSON.getString("file_size"));
+                        songTitle=songinfoJSON.getString("title");
+                        Log.e("getDownloadUrl", "songTitle="+songTitle+"getDownloadUrl="+file_link);
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
     /**
      * 播放点击歌曲并保存当前位置值
      * @param songid
@@ -242,6 +339,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
                         file_size = bitrateJSON.optInt("file_size");
                         file_duration = bitrateJSON.optInt("file_duration");
                         mActivity.getLocalMusicService().playNet(file_link);
+                        Toast.makeText(mActivity,"音乐加载中,请稍等...",Toast.LENGTH_LONG).show();
                     }catch (Exception e){
                         e.printStackTrace();
                     }
@@ -343,7 +441,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
      * @param songid
      * @return
      */
-    public String getAdress(final String songid){
+    public void getAdress(final String songid){
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -379,7 +477,6 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return adress;
     }
     /**
      * 歌曲搜索解析
