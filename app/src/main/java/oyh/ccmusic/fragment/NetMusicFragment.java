@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -78,6 +79,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
     private String adress;//歌词地址
     private String songAdress;//歌曲地址
     private String file_link;
+    private String lrc_link;
     private String songTitle;
     private String netLrc;
     private String getDate;
@@ -146,7 +148,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
             String songid=mResultData.get(i).getUrl().substring(6);
             songLongId=songid;
             getDownloadUrl(songLongId);//获取歌曲文件的地址
-            getAdress(songLongId);//获取歌曲歌词的地址
+//            getAdress(songLongId);//获取歌曲歌词的地址
             showDownloadDialog(i);
             return true;
         }
@@ -163,7 +165,8 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
             String songid=mResultData.get(position).getUrl().substring(6);
             currentPos=songid;
             play(currentPos);
-            getAdress(songid);//获取歌词
+
+
             Log.e("currentPos", "currentPos="+currentPos);
         }
     };
@@ -196,7 +199,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onClick(View v) {
                 downloadSong();//歌曲下载
-//                downloadSongLrc();//歌词下载
+                downloadSongLrc();//歌词下载
                 dismissDialog();
             }
         });
@@ -231,7 +234,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
                 try
                 {
 
-                    new MultipartThreadDownloador(adress,
+                    new MultipartThreadDownloador(lrc_link,
                             appHome, songTitle+".lrc", 2).download();
                 } catch (IOException e)
                 {
@@ -295,9 +298,10 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
                         JSONObject bitrateJSON = object.getJSONObject("bitrate");
                         JSONObject songinfoJSON = object.getJSONObject("songinfo");
                         file_link = bitrateJSON.getString("file_link");
+                        lrc_link=songinfoJSON.getString("lrclink");
                         MusicUtils.put("filesize",bitrateJSON.getString("file_size"));
                         songTitle=songinfoJSON.getString("title");
-                        Log.e("getDownloadUrl", "songTitle="+songTitle+"getDownloadUrl="+file_link);
+                        Log.e("getDownloadUrl", "lrc_link="+lrc_link+"getDownloadUrl="+file_link);
                     }catch (Exception e){
                         e.printStackTrace();
                     }
@@ -441,43 +445,43 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
      * @param songid
      * @return
      */
-    public void getAdress(final String songid){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    HttpURLConnection connection;
-                    URL url = new URL("http://ting.baidu.com/data/music/links?songIds="+songid);
-                    connection = (HttpURLConnection) url.openConnection();
-                    connection.setConnectTimeout(60*1000);
-                    connection.setReadTimeout(60*1000);
-                    connection.connect();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                    String s;
-                    if ((s=reader.readLine())!=null){
-                        s = s.replace("\\","");//去掉\\
-                        try {
-                            JSONObject object = new JSONObject(s);
-                            JSONObject object1 = object.getJSONObject("data");
-                            JSONArray array = object1.getJSONArray("songList");
-                            JSONObject object2 = array.getJSONObject(0);
-                            adress = object2.getString("songLink");
-                            Log.e("tagadress",adress);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void getAdress(final String songid){
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    HttpURLConnection connection;
+//                    URL url = new URL("http://ting.baidu.com/data/music/links?songIds="+songid);
+//                    connection = (HttpURLConnection) url.openConnection();
+//                    connection.setConnectTimeout(60*1000);
+//                    connection.setReadTimeout(60*1000);
+//                    connection.connect();
+//                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+//                    String s;
+//                    if ((s=reader.readLine())!=null){
+//                        s = s.replace("\\","");//去掉\\
+//                        try {
+//                            JSONObject object = new JSONObject(s);
+//                            JSONObject object1 = object.getJSONObject("data");
+//                            JSONArray array = object1.getJSONArray("songList");
+//                            JSONObject object2 = array.getJSONObject(0);
+//                            adress = object2.getString("songLink");
+//                            Log.e("tagadress","adress="+adress);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
+//        try {
+//            Thread.sleep(500);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//    }
     /**
      * 歌曲搜索解析
      * @param content

@@ -1,7 +1,6 @@
 package oyh.ccmusic.util;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,7 +78,6 @@ public class MultipartThreadDownloador {
     public void createFileByUrl( ) throws IOException
     {
         URL url = new URL(urlStr);
-//        URL url = new URL((String) MusicUtils.get(AppliContext.sContext,"songUrl",0));
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(15 * 1000);
         conn.setRequestMethod("GET");
@@ -98,7 +96,6 @@ public class MultipartThreadDownloador {
         if (conn.getResponseCode() == 200)
         {
             this.fileSize = conn.getContentLength();// 根据响应获取文件大小
-//            this.fileSize = (long) MusicUtils.get(AppliContext.sContext,"filesize",0);// 根据响应获取文件大小
             if (fileSize <= 0)
                 throw new RuntimeException(
                         "the file that you download has a wrong size ... ");

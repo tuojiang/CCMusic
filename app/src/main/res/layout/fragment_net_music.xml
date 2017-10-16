@@ -5,7 +5,8 @@
     android:orientation="vertical"
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
-    android:paddingTop="5dp" >
+    android:paddingTop="5dp"
+    android:weightSum="1">
 
     <LinearLayout
         android:id="@+id/ll_search_btn_container"
@@ -77,5 +78,6 @@
         android:overScrollMode="never"
         android:scrollbars="none"
         android:visibility="gone" />
+
 
 </LinearLayout>

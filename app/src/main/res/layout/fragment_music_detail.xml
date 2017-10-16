@@ -17,19 +17,19 @@
         <RelativeLayout
             android:layout_width="40dp"
             android:layout_height="40dp">
-            <ImageButton
+            <ImageView
                 android:layout_width="38dp"
                 android:layout_height="38dp"
                 android:src="@drawable/ic_action_shuffle"
                 android:id="@+id/im_shuffleSong"
                 android:layout_weight="0.08" />
-            <ImageButton
+            <ImageView
                 android:layout_width="38dp"
                 android:layout_height="38dp"
                 android:src="@drawable/ic_action_curplist"
                 android:id="@+id/im_curplaylist"
                 android:layout_weight="0.08" />
-            <ImageButton
+            <ImageView
                 android:layout_width="38dp"
                 android:layout_height="38dp"
                 android:src="@drawable/ic_action_repeat"

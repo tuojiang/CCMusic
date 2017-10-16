@@ -86,13 +86,8 @@ public class LocalMusicService extends Service{
         int playMyLove(int position);
         void isSeekto(int m_send);
         void isPlayPre();
-        void shPlayPre();
         void isPlayNext();
-        void shPlayNext();
         boolean isPlayering();
-        void currentList();
-        void toggleShuffle();
-        void cycleRepeat();
         void initLrc();
         void initLrcMlove();
         int lrcIndex();
@@ -153,6 +148,8 @@ public class LocalMusicService extends Service{
 
         @Override
         public int play(int position) {
+            final int isRepeat = (int) MusicUtils.get(AppliContext.sContext,"isRepeat", 0);
+
             initLrc();
             if(position < 0) position = 0;
             if(position >= MusicUtils.sMusicList.size()) position = MusicUtils.sMusicList.size() - 1;
@@ -172,7 +169,12 @@ public class LocalMusicService extends Service{
                 mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mediaPlayer) {
-                        next();
+                        if (isRepeat==1){
+                            mPlayer.setLooping(true);//单曲循环播放
+                        }else if (isRepeat==0){
+                            next();
+
+                        }
                     }
                 });
             } catch (Exception e) {
@@ -381,16 +383,6 @@ public class LocalMusicService extends Service{
         }
 
         /**
-         * 随机播放上一首
-         */
-        @Override
-        public void shPlayPre() {
-            initLrc();
-            shuffleMusic();
-            playerMusic();
-        }
-
-        /**
          * 播放下一首
          */
         @Override
@@ -402,15 +394,6 @@ public class LocalMusicService extends Service{
             next();
         }
 
-        /**
-         * 随机播放下一首
-         */
-        @Override
-        public void shPlayNext() {
-            initLrc();
-            shuffleMusic();
-            playerMusic();
-        }
 
         /**
          * 判读是否正在播放
@@ -425,58 +408,7 @@ public class LocalMusicService extends Service{
             }
         }
 
-        /**
-         * 顺序播放
-         */
-        @Override
-        public void currentList() {
-            initLrc();
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    currentPos++;
-                    if (currentPos>=MusicUtils.sMusicList.size()){
-                        currentPos=0;
-                    }
-                    initMusic();
-                    playerMusic();
-                }
-            });
-        }
 
-        /**
-         * 随机播放
-         */
-        @Override
-        public void toggleShuffle() {
-            initLrc();
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    shuffleMusic();
-                    playerMusic();
-
-                }
-            });
-        }
-
-        /**
-         * 单曲循环播放
-         */
-        @Override
-        public void cycleRepeat() {
-            initLrc();
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-
-                    repeatMusic();
-                    playerMusic();
-                }
-            });
-        }
 
         /**
          * 初始化歌词
@@ -629,7 +561,6 @@ public class LocalMusicService extends Service{
         insertMusicItemToContentProvider(music);
 
         if(needplay) {
-            //TODO   进行播放
         }
     }
     private void insertMusicItemToContentProvider(Music music){
@@ -641,116 +572,7 @@ public class LocalMusicService extends Service{
         cv.put(DBHelper.SONG_URI,music.getMusicPath());
         Uri uri=mResolver.insert(PlayListContentProvider.CONTENT_SONGS_URI,cv);
     }
-    /**
-     * 随机播放
-     */
-    private void shuffleMusic() {
-        int min=0;
-        int max=musicPathLists.size();
-        Random random = new Random();
 
-        final int s = random.nextInt(max-min+1) + min;
-        currentPos=s;
-        mPlayer.reset();
-        try {
-            mPlayer.setDataSource(MusicUtils.sMusicList.get(currentPos).getMusicPath());
-//            mPlayer.prepare();
-            mPlayer.prepareAsync();
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    currentPos=s;
-
-
-                    shuffleMusic();
-                    playerMusic();
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    /**
-     * 单曲播放
-     */
-    private void repeatMusic() {
-
-        mPlayer.reset();
-
-        try {
-
-            mPlayer.setDataSource(MusicUtils.sMusicList.get(currentPos).getMusicPath());
-//            mPlayer.prepare();
-            mPlayer.prepareAsync();
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    nextPlay=currentPos;
-
-
-                    repeatMusic();
-                    playerMusic();
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    /**
-     * 初始化音乐数据
-     */
-    public void initMusic(){
-        mPlayer.reset();
-        try{
-            mPlayer.setDataSource(MusicUtils.sMusicList.get(currentPos).getMusicPath());
-//            mPlayer.prepare();
-            mPlayer.prepareAsync();
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    currentPos++;
-                    if (currentPos>=MusicUtils.sMusicList.size()){
-                        currentPos=0;
-                    }
-                    initMusic();
-                    myBinder.initLrc();
-                    playerMusic();
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-    /**
-     * 初始化音乐数据
-     */
-    public void initMLMusic(){
-        mPlayer.reset();
-        try{
-            mPlayer.setDataSource(MusicUtils.sMusicSQlList.get(currentMLPosition).getMusicPath());
-            Log.e("service","initMLMusic"+MusicUtils.sMusicSQlList.size());
-//            mPlayer.prepare();
-            mPlayer.prepareAsync();
-            mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    currentMLPosition++;
-                    if (currentMLPosition>=MusicUtils.sMusicList.size()){
-                        currentMLPosition=0;
-                    }
-                    initMLMusic();
-//                    myBinder.initLrc();
-                    playerMusic();
-                }
-            });
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
     /**
      * 播放音乐
      * @return
@@ -768,7 +590,6 @@ public class LocalMusicService extends Service{
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         myBinder.initLrc();
-        initMusic();
         //更新appWidget
         updateAppWidget();
 

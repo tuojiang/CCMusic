@@ -27,6 +27,7 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -59,9 +60,9 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
     private boolean mFlag = true;
     private ArrayList<Music> musicBeanList = new ArrayList<>();
     private int mProgress;
-    private ImageButton mShuffleSong;
-    private ImageButton mCurtListSong;
-    private ImageButton mRepeatSong;
+    private ImageView mShuffleSong;
+    private ImageView mCurtListSong;
+    private ImageView mRepeatSong;
     private ImageView mBack;
     private Timer timer;
     private int index=0;
@@ -74,6 +75,7 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
     private static int ORDERMODE=0;
     private static int SHUFFLEMODE=1;
     private static int REPEATMODE=2;
+    int isRepeat=0;
     //    默认播放模式为顺序播放
     private static int CURRENTMODE=ORDERMODE;
     public ArrayList<LrcContent> mLrcList;//存放歌词列表对象
@@ -168,6 +170,9 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         currentTimeTxt = view.findViewById(R.id.current_time_txt);
         totalTimeTxt = view.findViewById(R.id.total_time_txt);
 
+        mCurtListSong.setVisibility(View.VISIBLE);
+        mShuffleSong.setVisibility(View.INVISIBLE);
+        mRepeatSong.setVisibility(View.INVISIBLE);
 
         seekBar.setOnSeekBarChangeListener(new MySeekBar());
         bt_play.setOnClickListener(this);
@@ -188,30 +193,77 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
                 playerMusicByIBinder();
                 break;
             case R.id.bt_pre:
-                mActivity.getLocalMusicService().isPlayPre();
-                mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition-1);
-                lrcView.setmLrcList(mLrcList);
-                lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
-                mHandler.post(mRunnable);
-//                if (CURRENTMODE == SHUFFLEMODE) {
-//                } else {
-//                }
+                if (CURRENTMODE == SHUFFLEMODE) {
+                    int min=1;
+                    int max=MusicUtils.sMusicList.size();
+                    Random random = new Random();
+                    final int s = random.nextInt(max-min+1) + min;
+                    mActivity.getLocalMusicService().play(s);
+                    mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,s);
+                    lrcView.setmLrcList(mLrcList);
+                    lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                    mHandler.post(mRunnable);
+                } else {
+                    mActivity.getLocalMusicService().isPlayPre();
+                    mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition-1);
+                    lrcView.setmLrcList(mLrcList);
+                    lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                    mHandler.post(mRunnable);
+                }
 
                 break;
             case R.id.bt_next:
-                mActivity.getLocalMusicService().isPlayNext();
-                mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition+1);
-                lrcView.setmLrcList(mLrcList);
-                lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
-                mHandler.post(mRunnable);
-//                if (CURRENTMODE == SHUFFLEMODE) {
-//                } else {
-//                }
+                if (CURRENTMODE == SHUFFLEMODE) {
+                    int min=0;
+                    int max=MusicUtils.sMusicList.size();
+                    Random random = new Random();
+                    final int s = random.nextInt(max-min+1) + min;
+                    mActivity.getLocalMusicService().play(s);
+                    mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,s);
+                    lrcView.setmLrcList(mLrcList);
+                    lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                    mHandler.post(mRunnable);
+                }else {
+                    mActivity.getLocalMusicService().isPlayNext();
+                    mLrcList = mActivity.getLocalMusicService().initLrcx(mLrcList,currentPosition+1);
+                    lrcView.setmLrcList(mLrcList);
+                    lrcView.setAnimation(AnimationUtils.loadAnimation(mActivity, R.anim.alpha_z));
+                    mHandler.post(mRunnable);
+                }
+
                 break;
             case R.id.iv_play_back:
                 getActivity().onBackPressed();
                 //TODO 返回后标题栏还原
 //                mActivity.Visiable();
+                break;
+            case R.id.im_curplaylist:
+                mShuffleSong.setVisibility(View.VISIBLE);
+                mCurtListSong.setVisibility(View.INVISIBLE);
+                mRepeatSong.setVisibility(View.INVISIBLE);
+                CURRENTMODE=SHUFFLEMODE;
+                Toast.makeText(mActivity,"随机播放",Toast.LENGTH_LONG).show();
+                isRepeat=0;
+                MusicUtils.put("isRepeat", isRepeat);
+                break;
+            case R.id.im_shuffleSong:
+                mRepeatSong.setVisibility(View.VISIBLE);
+                mShuffleSong.setVisibility(View.INVISIBLE);
+                mCurtListSong.setVisibility(View.INVISIBLE);
+                CURRENTMODE=REPEATMODE;
+                Toast.makeText(mActivity,"单曲循环",Toast.LENGTH_LONG).show();
+                isRepeat=1;
+                MusicUtils.put("isRepeat", isRepeat);
+
+                break;
+            case R.id.im_repeatSong:
+                mCurtListSong.setVisibility(View.VISIBLE);
+                mShuffleSong.setVisibility(View.INVISIBLE);
+                mRepeatSong.setVisibility(View.INVISIBLE);
+                CURRENTMODE=ORDERMODE;
+                Toast.makeText(mActivity,"顺序播放",Toast.LENGTH_LONG).show();
+                isRepeat=0;
+                MusicUtils.put("isRepeat", isRepeat);
                 break;
         }
     }
