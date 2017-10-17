@@ -3,3 +3,4 @@
     <item android:id="@+id/add_list_menu" android:title="添加到播放列表" />
     <item android:id="@+id/del_list_menu" android:title="从播放列表删除" />
 </menu>
+

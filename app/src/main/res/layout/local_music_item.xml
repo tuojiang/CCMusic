@@ -53,14 +53,5 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
-    <!-- <ImageButton
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:background="@drawable/ib_list_add"
-         android:id="@+id/imageButton"
-         android:layout_alignParentTop="true"
-         android:layout_alignParentRight="true"
-         android:layout_alignParentEnd="true"
-         android:layout_alignBottom="@+id/tv_music_list_artist" />-->
 
 </RelativeLayout>

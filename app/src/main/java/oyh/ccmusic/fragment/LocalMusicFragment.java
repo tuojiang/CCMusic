@@ -6,7 +6,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,19 +13,18 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.INotificationSideChannel;
 import android.util.Log;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,12 +32,10 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import oyh.ccmusic.R;
 import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
-import oyh.ccmusic.adapter.LocalMusicListAdapter;
 import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
 import oyh.ccmusic.domain.LrcContent;
@@ -83,7 +79,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private android.support.v4.app.FragmentTransaction transaction;
     private static SimpleDateFormat format = new SimpleDateFormat("mm:ss");
     private ArrayList<Music> mMediaLists = new ArrayList<>();
-    private LocalMusicListAdapter adapter= new LocalMusicListAdapter();
+    private LocalMusicListAdapter adapter= new LocalMusicListAdapter(mActivity);
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -161,7 +157,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         totalTimeTxt = layout.findViewById(R.id.duration_time);
         mListView.setOnItemClickListener(mMusicItemClickListener);
         registerForContextMenu(mListView);
-        mListView.setOnCreateContextMenuListener(mMusicContextMenuClickListener);
         mListView.setAdapter(adapter);
         seekBar.setOnSeekBarChangeListener(new MySeekBar());
         playBtn.setOnClickListener(this);
@@ -218,13 +213,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             }
         }
     }
-private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View.OnCreateContextMenuListener() {
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        MenuInflater inflator = new MenuInflater(mActivity);
-        inflator.inflate(R.menu.menu_pop, menu);
-    }
-};
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
@@ -303,6 +291,119 @@ private View.OnCreateContextMenuListener mMusicContextMenuClickListener=new View
                 MusicDetailFragment musicDetailFragment=new MusicDetailFragment();
                 transaction.add(R.id.music_detail_fragment,musicDetailFragment).addToBackStack(null).commit();
                 break;
+        }
+    }
+
+    public class LocalMusicListAdapter extends BaseAdapter {
+        private static final String TAG = "LocalMusicListAdapter";
+        private View view;
+        public LocalMusicListAdapter(MainActivity mActivity) {
+        }
+
+        public void setPlayingPosition(int position) {
+            notifyDataSetChanged();
+        }
+
+
+        @Override
+        public int getCount() {
+            return MusicUtils.sMusicList.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return MusicUtils.sMusicList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Log.d(TAG, "LocalMusicListAdapter count: " + getCount());
+            ViewHolder viewHolder= null;
+            MyListener myListener=null;
+            if (convertView == null) {
+                convertView = View.inflate(AppliContext.sContext, R.layout.local_music_item, null);
+                viewHolder = new ViewHolder();
+                viewHolder.icon = convertView.findViewById(R.id.music_list_icon);
+                viewHolder.title = convertView.findViewById(R.id.tv_music_list_title);
+                viewHolder.artist = convertView.findViewById(R.id.tv_music_list_artist);
+                viewHolder.menuImage=convertView.findViewById(R.id.iv_aplist_btn);
+                viewHolder.mark = convertView.findViewById(R.id.music_list_selected);
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (ViewHolder)convertView.getTag();
+            }
+            myListener=new MyListener(position);
+            Music music = (Music) getItem(position);
+
+            Bitmap icon = BitmapFactory.decodeFile(music.getImage());
+            viewHolder.icon.setImageBitmap(icon == null ?
+                    BitmapFactory.decodeResource(
+                            AppliContext.sContext.getResources(), R.mipmap.img) : icon);
+            viewHolder.title.setText(music.getTitle());
+            viewHolder.artist.setText(music.getArtist());
+            viewHolder.menuImage.setOnClickListener(myListener);
+
+            view=convertView;
+            return convertView;
+        }
+
+        private class MenuListener implements PopupMenu.OnMenuItemClickListener{
+            Music music;
+            int positions;
+            public MenuListener(int position){
+                positions=position;
+            }
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                music=MusicUtils.sMusicList.get(positions);
+                String title=music.getTitle();
+                String path=music.getMusicPath();
+                int id = menuItem.getItemId();
+                if (id == R.id.add_list_popmenu) {
+                    Toast.makeText(AppliContext.sContext,title+"添加到播放列表", Toast.LENGTH_SHORT).show();
+                    mActivity.getLocalMusicService().addplaylist(music);
+                } else if (id == R.id.del_list_popmenu) {
+                    Toast.makeText(AppliContext.sContext, "从播放列表删除"+title, Toast.LENGTH_SHORT).show();
+                    mActivity.getLocalMusicService().delplaylist(title);
+                }else if (id == R.id.del_sdlist_popmenu){
+                    Toast.makeText(AppliContext.sContext, "从SD卡删除"+title, Toast.LENGTH_SHORT).show();
+                    mActivity.getLocalMusicService().delplaysdcard(path);
+                }
+
+                return true;
+            }
+        }
+
+        private class MyListener implements View.OnClickListener {
+            int mPosition;
+            Music music;
+            public MyListener(int inPosition){
+                mPosition= inPosition;
+            }
+            @Override
+            public void onClick(View v) {
+                music= (Music) getItem(mPosition);
+                String title=music.getTitle();
+                //将指定的菜单布局进行加载
+                PopupMenu popupMenu=new PopupMenu(AppliContext.sContext, v);
+                popupMenu.getMenuInflater().inflate(R.menu.menu_pop_menu, popupMenu.getMenu());
+                popupMenu.setOnMenuItemClickListener(new MenuListener(mPosition));//给菜单绑定监听
+                //展示菜单
+                popupMenu.show();
+            }
+
+        }
+        class ViewHolder {
+            ImageView icon;
+            TextView title, artist;
+            ImageView menuImage;
+            View mark;
         }
     }
 }

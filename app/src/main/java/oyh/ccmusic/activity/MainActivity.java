@@ -436,9 +436,11 @@ public class MainActivity extends FragmentActivity {
 
             }
             currentIndex=position;
-            animation.setFillAfter(true);// true:图片停在动画结束位置
-            animation.setDuration(300);
-            cursor.startAnimation(animation);
+            if(animation!=null) {
+                animation.setFillAfter(true);// true:图片停在动画结束位置
+                animation.setDuration(300);
+                cursor.startAnimation(animation);
+            }
         }
 
         @Override

@@ -27,6 +27,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +97,7 @@ public class LocalMusicService extends Service{
         int pause();
         void addplaylist(Music music);
         void delplaylist(String name);
+        void delplaysdcard(String filename);
         ArrayList<LrcContent> initLrcx(ArrayList<LrcContent> list,int index);
         ArrayList<LrcContent> initLrcMlove(ArrayList<LrcContent> list,int index);
     }
@@ -525,14 +527,35 @@ public class LocalMusicService extends Service{
                 return currentPos;
         }
 
+        /**
+         * 添加到当前列表
+         * @param music
+         */
         @Override
         public void addplaylist(Music music) {
             addPlayListInner(music, true);
         }
 
+        /**
+         * 从列表中删除
+         * @param name
+         */
         @Override
         public void delplaylist(String name) {
             dellPlayListInner(name);
+        }
+
+        /**
+         * 从sd卡删除
+         * @param path
+         */
+        @Override
+        public void delplaysdcard(String path) {
+            File file = new File(path);
+            if(file.isFile()){
+                file.delete();
+            }
+            file.exists();
         }
 
 

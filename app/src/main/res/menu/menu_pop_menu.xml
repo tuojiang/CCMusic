@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item android:id="@+id/add_list_popmenu" android:title="添加到播放列表" />
+    <item android:id="@+id/del_list_popmenu" android:title="从播放列表删除" />
+    <item android:id="@+id/del_sdlist_popmenu" android:title="从sd卡删除" />
+</menu>
+
+
+
