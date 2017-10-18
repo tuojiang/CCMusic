@@ -1,3 +1,9 @@
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <!--主界面布局-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,8 +15,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:background="@color/main_top_color"
-        >
+        android:background="@color/main_top_color">
+        <ImageView
+            android:id="@+id/iv_darwer_btn"
+            android:src="@drawable/darwer_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+        android:id="@+id/tv_toolbar_search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+            android:layout_marginLeft="140dp"
+        android:layout_gravity="center"
+        android:drawableLeft="@drawable/search_drawable_left"
+        android:text="搜索"
+        android:textColor="#ffff" />
     </android.support.v7.widget.Toolbar>
     <LinearLayout
         android:id="@+id/linearLayout1"
@@ -112,3 +131,12 @@
         android:flipInterval="30"
         android:persistentDrawingCache="animation" />
 </LinearLayout>
+    <!--抽屉拉开后的布局-->
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@layout/navigation_header"
+        app:menu="@menu/drawer" />
+</android.support.v4.widget.DrawerLayout>

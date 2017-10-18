@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Environment;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +35,8 @@ public class MusicUtils {
     public static ArrayList<Music> commonList =  new ArrayList<>();
     // 存放item列表
     public static ArrayList<Music> itemCommonList =  new ArrayList<>();
+    //本地搜索初始化列表
+    public static ArrayList<String> localSearchList =  new ArrayList<>();
     public static ArrayList<Music> myloveList =  new ArrayList<>();
     public static HashMap<String, String> map = new HashMap<String, String>();
     /**
@@ -47,6 +48,16 @@ public class MusicUtils {
         sMusicList.addAll(LocalMusicUtils.getInstance(context).queryMusic(Environment.getExternalStorageDirectory().getAbsolutePath()));
         commonList.addAll(sMusicList);
     }
+
+    /**
+     * 初始化搜索列表
+     * @param context
+     */
+    public static void initSearchList(Context context){
+        localSearchList.addAll(LocalMusicUtils.getInstance(context).queryMusicName(Environment.getExternalStorageDirectory().getAbsolutePath()));
+
+    }
+
     /**
      * 初始化流派列表
      * @param context

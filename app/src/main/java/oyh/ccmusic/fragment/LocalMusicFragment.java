@@ -214,25 +214,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         }
     }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        currentAdd=((AdapterView.AdapterContextMenuInfo) item.getMenuInfo()).position;
-        music=MusicUtils.sMusicList.get(currentAdd);
-        String title=music.getTitle();
-
-        switch (item.getItemId()) {
-            case R.id.add_list_menu:
-                Toast.makeText(mActivity,"add [ "+title+" ] to list",Toast.LENGTH_SHORT).show();
-                mActivity.getLocalMusicService().addplaylist(music);
-
-                break;
-            case R.id.del_list_menu:
-                Toast.makeText(mActivity,"delete [ "+title+" ] from list",Toast.LENGTH_SHORT).show();
-                mActivity.getLocalMusicService().delplaylist(title);
-                break;
-        }
-        return true;
-    }
 
     /**
      * 监听歌曲点击事件
@@ -300,7 +281,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         public LocalMusicListAdapter(MainActivity mActivity) {
         }
 
-        public void setPlayingPosition(int position) {
+        public void setPlayingPosition() {
             notifyDataSetChanged();
         }
 
@@ -374,6 +355,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
                 }else if (id == R.id.del_sdlist_popmenu){
                     Toast.makeText(AppliContext.sContext, "从SD卡删除"+title, Toast.LENGTH_SHORT).show();
                     mActivity.getLocalMusicService().delplaysdcard(path);
+                    adapter.setPlayingPosition();
                 }
 
                 return true;

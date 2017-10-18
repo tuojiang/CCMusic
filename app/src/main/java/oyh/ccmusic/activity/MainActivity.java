@@ -19,16 +19,20 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -65,9 +69,14 @@ public class MainActivity extends FragmentActivity {
     private TextView albumTextview;
     private TextView artistTextview;
     private TextView genresTextview;
+    private ImageView darwerImageView;
     public LinearLayout linearLayout;
     public LinearLayout linearLayout1;
+    public DrawerLayout drawerLayout;
+    public NavigationView navigationView;
     private ImageView cursor;
+    private Toolbar toolbar;
+    private TextView toolbarsearch;
     //图片偏移量
     private int offset = 0;
     private int position_one;
@@ -81,7 +90,7 @@ public class MainActivity extends FragmentActivity {
     private ArrayList<Fragment> fragmentArrayList;
     private FragmentManager fragmentManager;
     public static Context context;
-
+    private android.support.v4.app.FragmentTransaction transaction;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -94,24 +103,19 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
-//        AppCompatActivity mAppCompatActivity = new AppCompatActivity();
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar =findViewById(R.id.toolbar);
         toolbar.setTitle("我的乐库");//设置主标题
-//        mAppCompatActivity.setSupportActionBar(toolbar);
-//        setSupportActionBar(toolbar);
-//        getActionBar().setDisplayHomeAsUpEnabled(true);
-
         //绑定服务
         bindService(new Intent(this, LocalMusicService.class), localplayServiceConnection,
                 Context.BIND_AUTO_CREATE);
         //初始化监听
         observer();
 
-        //初始化TextView
-        InitTextView();
-
         //初始化Fragment
         InitFragment();
+
+        //初始化TextView
+        InitTextView();
 
         //初始化ViewPager
         InitViewPager();
@@ -299,6 +303,44 @@ public class MainActivity extends FragmentActivity {
      * 初始化标题栏
      */
     private void InitTextView() {
+//        搜索
+        toolbarsearch=findViewById(R.id.tv_toolbar_search);
+        toolbarsearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MusicUtils.initSearchList(AppliContext.sContext);
+                Log.e("onClick","onClick="+MusicUtils.localSearchList.size());
+                Intent intent=new Intent(MainActivity.this,LocalSearchActivity.class);
+                startActivity(intent);
+            }
+        });
+        drawerLayout = findViewById(R.id.drawer_layout);
+        darwerImageView=findViewById(R.id.iv_darwer_btn);
+        darwerImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        navigationView=findViewById(R.id.navigation_view);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()){
+                    case R.id.item_mymusic:
+                        mviewPager.setCurrentItem(0);
+                        toolbar.setTitle("我的乐库");
+                        break;
+                    case R.id.item_design:
+                        Intent intent=new Intent(MainActivity.this,VersionActivity.class);
+                        startActivity(intent);
+                        break;
+                }
+                item.setChecked(true);//点击了把它设为选中状态
+                drawerLayout.closeDrawers();//关闭抽屉
+                return true;
+            }
+        });
         linearLayout=findViewById(R.id.linearLayout1);
         linearLayout1=findViewById(R.id.linearLayout2);
         context=getApplicationContext();
@@ -309,7 +351,6 @@ public class MainActivity extends FragmentActivity {
         myloveMTextview= findViewById(R.id.mylovemusic_tv);
         genresTextview=findViewById(R.id.genresmusic_tv);
         netMTextview= findViewById(R.id.netmusic_tv);
-
 
         localMTextview.setOnClickListener(new MyOnClickListener(0));
         albumTextview.setOnClickListener(new MyOnClickListener(1));
@@ -378,25 +419,21 @@ public class MainActivity extends FragmentActivity {
                     if (currentIndex==0){
                         animation = new TranslateAnimation(offset, position_one, 0, 0);
                         resetTextViewTextColor();
-//                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                         albumTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==2){
                         animation = new TranslateAnimation(position_one*2, position_one, 0, 0);
                         resetTextViewTextColor();
                         albumTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
-//                        netMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }
                     break;
                 case 2:
                     if (currentIndex==1){
                         animation = new TranslateAnimation(position_one, position_one*2, 0, 0);
                         resetTextViewTextColor();
-//                        myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                         artistTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }else if (currentIndex==3){
                         animation = new TranslateAnimation(position_one*3, position_one*2, 0, 0);
                         resetTextViewTextColor();
-//                        myloveMTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                         artistTextview.setTextColor(getResources().getColor(R.color.main_top_tab_color_2));
                     }
                     break;
