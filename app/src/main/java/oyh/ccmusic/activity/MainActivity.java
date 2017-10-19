@@ -32,6 +32,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +56,7 @@ import oyh.ccmusic.fragment.LocalMusicFragment;
 import oyh.ccmusic.fragment.MloveMusicFragment;
 import oyh.ccmusic.fragment.NetMusicFragment;
 import oyh.ccmusic.service.LocalMusicService;
+import oyh.ccmusic.util.GuideView;
 import oyh.ccmusic.util.MusicUtils;
 
 /**
@@ -77,6 +79,9 @@ public class MainActivity extends FragmentActivity {
     private ImageView cursor;
     private Toolbar toolbar;
     private TextView toolbarsearch;
+    private GuideView guideView;
+    private GuideView guideView3;
+    private GuideView guideView2;
     //图片偏移量
     private int offset = 0;
     private int position_one;
@@ -123,8 +128,7 @@ public class MainActivity extends FragmentActivity {
         //初始化InitImageView
         InitImageView();
 
-        //权限获取
-//        verifyStoragePermissions(this);
+        setGuideView();
 
         //注册广播
         registerReceiver();
@@ -240,9 +244,9 @@ public class MainActivity extends FragmentActivity {
         setBmpW(cursor, bmpW);
         offset = 0;
         //游标偏移量赋值
-//        position_one = (int) (screenW / 3.0);
+//      有几个tab就除以几
         position_one = (int) (screenW / 6.0);
-//        position_two = position_one * 2;
+//      乘上要切换的部分数量
         position_two = position_one * 5;
     }
     /**
@@ -308,10 +312,8 @@ public class MainActivity extends FragmentActivity {
         toolbarsearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MusicUtils.initSearchList(AppliContext.sContext);
-                Log.e("onClick","onClick="+MusicUtils.localSearchList.size());
                 Intent intent=new Intent(MainActivity.this,LocalSearchActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,1);
             }
         });
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -386,9 +388,7 @@ public class MainActivity extends FragmentActivity {
          */
         if(getRequestedOrientation()!= ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        }
-
-        super.onResume();
+        }super.onResume();
     }
     /**
      * 页卡切换监听
@@ -487,6 +487,16 @@ public class MainActivity extends FragmentActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode==1){
+            int index=data.getIntExtra("index",0);
+            callBack.play(index);
+            Log.e("index activity","index="+index);
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
     protected void onDestroy() {
         unregisterReceiver(mScanSDCardReceiver);
         unregisterReceiver(mHeadSetReceiver);
@@ -537,6 +547,83 @@ public class MainActivity extends FragmentActivity {
         }
     };
 
+    /**
+     * 设置引导
+     */
+    private void setGuideView() {
+
+        // 使用文字
+        TextView tv = new TextView(this);
+        tv.setText("(′▽`〃)点击这里搜索歌曲哦");
+        tv.setTextColor(getResources().getColor(R.color.white));
+        tv.setTextSize(20);
+        tv.setGravity(Gravity.CENTER);
+
+        // 使用文字
+        final TextView tv2 = new TextView(this);
+        tv2.setText("(*′▽`)这里来切换列表");
+        tv2.setTextColor(getResources().getColor(R.color.white));
+        tv2.setTextSize(20);
+        tv2.setGravity(Gravity.CENTER);
+
+        // 使用文字
+        TextView tv3 = new TextView(this);
+        tv3.setText("歌曲播放清单ㄟ(≥◇≤)ㄏ");
+        tv3.setTextColor(getResources().getColor(R.color.white));
+        tv3.setTextSize(20);
+        tv3.setGravity(Gravity.LEFT);
+
+        guideView2 = GuideView.Builder
+                .newInstance(this)
+                .setTargetView(toolbarsearch)
+                .setCustomGuideView(tv)
+                .setDirction(GuideView.Direction.BOTTOM)
+                .setShape(GuideView.MyShape.CIRCULAR)   // 设置椭圆形显示区域，
+                .setRadius(100)
+                .setBgColor(getResources().getColor(R.color.shadow))
+                .setOnclickListener(new GuideView.OnClickCallback() {
+                    @Override
+                    public void onClickedGuideView() {
+                        guideView2.hide();
+                        guideView3.show();
+                    }
+                })
+                .build();
+
+
+        guideView3 = GuideView.Builder
+                .newInstance(this)
+                .setTargetView(linearLayout)
+                .setCustomGuideView(tv2)
+                .setDirction(GuideView.Direction.BOTTOM)
+                .setShape(GuideView.MyShape.RECTANGULAR)   // 设置矩形显示区域，
+                .setRadius(80)          // 设置圆形或矩形透明区域半径，默认是targetView的显示矩形的半径，如果是矩形，这里是设置矩形圆角大小
+                .setBgColor(getResources().getColor(R.color.shadow))
+                .setOnclickListener(new GuideView.OnClickCallback() {
+                    @Override
+                    public void onClickedGuideView() {
+                        guideView3.hide();
+                        guideView.show();
+                    }
+                })
+                .build();
+        guideView = GuideView.Builder
+                .newInstance(this)
+                .setTargetView(mviewPager)
+                .setCustomGuideView(tv3)
+                .setDirction(GuideView.Direction.TOP)
+                .setShape(GuideView.MyShape.CIRCULAR)   // 设置矩形显示区域，
+                .setRadius(500)          // 设置圆形或矩形透明区域半径，默认是targetView的显示矩形的半径，如果是矩形，这里是设置矩形圆角大小
+                .setBgColor(getResources().getColor(R.color.shadow))
+                .setOnclickListener(new GuideView.OnClickCallback() {
+                    @Override
+                    public void onClickedGuideView() {
+                        guideView.hide();
+                    }
+                })
+                .build();
+        guideView2.show();
+    }
     /**
      * 权限获取
      * @param activity

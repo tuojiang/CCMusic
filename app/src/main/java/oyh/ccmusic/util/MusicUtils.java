@@ -3,9 +3,13 @@ package oyh.ccmusic.util;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Build;
 import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Log;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,14 +54,38 @@ public class MusicUtils {
     }
 
     /**
-     * 初始化搜索列表
+     * 根据名称进行查询
      * @param context
+     * @param key
+     * @return
      */
-    public static void initSearchList(Context context){
-        localSearchList.addAll(LocalMusicUtils.getInstance(context).queryMusicName(Environment.getExternalStorageDirectory().getAbsolutePath()));
+    public static String[] queryMusicName(Context context, String key) {
+        ArrayList<String> nameList = new ArrayList<>();
+        Cursor c = null;
+        try {
+            c = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null,
+                    MediaStore.Audio.Media.DISPLAY_NAME + " LIKE '%" + key + "%'",
+                    null,
+                    MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+            while (c.moveToNext()) {
+                String title = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));//歌曲名
+                String name = c.getString(c.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)); // 歌曲名
+                nameList.add(name);
+                localSearchList.add(title);
+            }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+        }
+        if (nameList.isEmpty()){
+            return new String[]{};
+        }
+        return (String[])nameList.toArray(new String[nameList.size()]);
     }
-
     /**
      * 初始化流派列表
      * @param context
@@ -202,7 +230,23 @@ public class MusicUtils {
         return index;
     }
 
-
+    /**
+     * 根据歌名查询在sMusicList中位置
+     * @param name
+     * @return
+     */
+    public static int queryNameToList(String name){
+        int index=0;
+        for (int i=0;i<sMusicList.size();i++){
+            Music music= sMusicList.get(i);
+            if (name.equals(music.getTitle())) {
+                index = i;
+            }else {
+                continue;
+            }
+        }
+        return index;
+    }
 
     /**
      * 获取sd卡路径
@@ -274,5 +318,15 @@ public class MusicUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * 判断文件是否存在
+     * @param path
+     * @return
+     */
+    public static boolean isExists(String path) {
+        File file = new File(path);
+        return file.exists();
     }
 }

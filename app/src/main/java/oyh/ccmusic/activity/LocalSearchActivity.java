@@ -1,106 +1,169 @@
 package oyh.ccmusic.activity;
 
-import android.app.Activity;
-import android.content.Context;
-import android.database.Cursor;
-import android.os.Environment;
-import android.provider.ContactsContract;
-import android.provider.MediaStore;
-import android.support.v7.app.ActionBar;
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
-import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import oyh.ccmusic.R;
-import oyh.ccmusic.adapter.LocalSearchAdapter;
 import oyh.ccmusic.util.MusicUtils;
 
 public class LocalSearchActivity extends AppCompatActivity {
-
-    private SearchView searchview;
-    private ListView listview;
-    private ArrayList<String> data;
-    private LocalSearchAdapter mAdapter;
-    private Cursor mCursor;
+    private static final String TAG = LocalSearchActivity.class.getSimpleName();
+    private static final int REQ_PERMISSION = 100;
+    private SearchView.SearchAutoComplete mSearchAutoComplete;
+    private SearchView mSearchView;
+    private Toolbar mToolbar;
+    private ListView mLvMusic;
+    private MenuItem searchItem;
+    private ArrayList<String> localSearch;
+    private FragmentManager fragmentManager;
+    private android.support.v4.app.FragmentTransaction transaction;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_local_search);
-        ActionBar mActionBar=getSupportActionBar();
-        mActionBar.setHomeButtonEnabled(true);
-        mActionBar.setDisplayHomeAsUpEnabled(true);
-        mActionBar.setTitle("音乐搜索");
 
-
+        initView();
+        initToolbar();
+        requestPermission();
     }
 
-    private void findView() {
-        searchview=(SearchView) findViewById(R.id.sv_local_music);
-        listview=(ListView) findViewById(R.id.lv_search_local);
-        listview.setTextFilterEnabled(true);//设置对字符串过滤 对应适配器
-        searchview.setIconifiedByDefault(true); //表示搜索图标是否在输入框内。true效果更加
-        searchview.onActionViewExpanded(); //表示在内容为空时不显示取消的x按钮，内容不为空时显示.
-        searchview.setSubmitButtonEnabled(true);//编辑框后显示search按钮
-        searchview.setFocusable(false);
-        searchview.clearFocus();
-        data = new ArrayList<>();
-        mAdapter=new LocalSearchAdapter(this, data);
-        listview.setAdapter(mAdapter);
-        final ArrayList<String> nameList=MusicUtils.localSearchList;
-		/*输入框文字listener*/
-        searchview.setOnQueryTextListener(new SearchView.OnQueryTextListener() {// 监听 SearchView 中的数据变化
 
-            /*开始搜索listener*/
+    private void initView() {
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mLvMusic = (ListView) findViewById(R.id.lv_music);
+        mLvMusic.setOnItemClickListener(mSearchItemClickListener);
+    }
+
+    /**
+     * 监听歌曲点击事件
+     */
+    private AdapterView.OnItemClickListener mSearchItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position,
+                                long id) {
+            String name = localSearch.get(position);
+            int index = MusicUtils.queryNameToList(name);
+            Log.e("index onItemClick","index="+index);
+            Intent data = new Intent();
+            data.putExtra("index",index);
+            setResult(1, data);
+            finish();
+            MusicUtils.put("searchps",index);
+        }
+    };
+
+    private void initToolbar() {
+        setSupportActionBar(mToolbar);
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onQueryTextSubmit(String queryText) {
-                data=MusicUtils.localSearchList;
-                mAdapter.notifyDataSetChanged();
+            public void onClick(View v) {
+                if (mSearchAutoComplete.isShown()) {
+                    try {
+                        mSearchAutoComplete.setText("");//清除文本
+                        //利用反射调用收起SearchView的onCloseClicked()方法
+                        Method method = mSearchView.getClass().getDeclaredMethod("onCloseClicked");
+                        method.setAccessible(true);
+                        method.invoke(mSearchView);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    finish();
+                }
+            }
+        });
+    }
+
+    private void requestPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            //如果还没有读取SD卡的权限,申请
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},REQ_PERMISSION);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_search_view, menu);
+
+        searchItem = menu.findItem(R.id.action_search);
+        mSearchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        mSearchView.setQueryHint("输入歌曲名查找");
+
+        mSearchView.onActionViewExpanded();// 当展开无输入内容的时候，没有关闭的图标
+        mSearchView.setIconified(true);//设置searchView处于展开状态
+
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //提交按钮的点击事件
+                Toast.makeText(LocalSearchActivity.this, query, Toast.LENGTH_SHORT).show();
                 return true;
             }
-            /*搜索变化listener*/
+
             @Override
             public boolean onQueryTextChange(String newText) {
-                if(newText!=null&&newText.length()>0){
-                    listview.setFilterText(newText);
-                }else{
-                    listview.clearTextFilter();
-                }
-                if (searchview!= null) {
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    if (imm != null) {
-                        imm.hideSoftInputFromWindow(
-                                searchview.getWindowToken(), 0);
-                    }
-                    searchview.clearFocus();
-                }
+                //当输入框内容改变的时候回调
+                quertMusic(newText);
                 return true;
             }
         });
-		/*点击取消按钮listener，默认点击搜索输入框*/
-        searchview.setOnCloseListener(new SearchView.OnCloseListener() {
 
-            @Override
-            public boolean onClose() {
-                return true;
-            }
-        });
+
+        mSearchAutoComplete =  mSearchView.findViewById(R.id.search_src_text);
+
+        //设置输入框内容文字和提示文字的颜色
+        mSearchAutoComplete.setHintTextColor(getResources().getColor(android.R.color.white));
+        mSearchAutoComplete.setTextColor(getResources().getColor(android.R.color.white));
+
+        return super.onCreateOptionsMenu(menu);
     }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home:
-                finish();
-                return true;
-            default:
-                break;
+
+    /**
+     * 模糊查找音乐
+     * @param key
+     */
+    private void quertMusic(String key) {
+        localSearch=MusicUtils.localSearchList;
+        String[] musics = new String[]{};
+        if (!TextUtils.isEmpty(key)){
+            musics = MusicUtils.queryMusicName(this, key);
         }
-        return super.onOptionsItemSelected(item);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, musics);
+        mLvMusic.setAdapter(adapter);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQ_PERMISSION) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "读取SD卡权限被拒绝了", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

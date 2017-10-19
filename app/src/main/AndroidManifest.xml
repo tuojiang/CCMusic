@@ -39,7 +39,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.MainActivity" />
+        <activity android:name=".activity.MainActivity" android:launchMode="standard"/>
 
         <service android:name=".service.LocalMusicService" />
 
@@ -60,7 +60,7 @@
         </receiver>
 
         <activity android:name=".activity.VersionActivity" />
-        <activity android:name=".activity.LocalSearchActivity"></activity>
+        <activity android:name=".activity.LocalSearchActivity" android:launchMode="standard"/>
     </application>
 
 </manifest>

@@ -91,30 +91,7 @@ public class LocalMusicUtils {
         cursor.close();
         return results;
     }
-    /**
-     * 查询sd路径下所有音乐的名字
-     * @param path
-     * @return
-     */
-    public ArrayList<String> queryMusicName(String path) {
-        ArrayList<String> results = new ArrayList<>();
-        Cursor cursor = mContext.getContentResolver().query(
-                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null,
-                MediaStore.Audio.Media.DATA + " like ?",
-                new String[]{path + "%"},
-                MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
-        if (cursor == null) return results;
-        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            String isMusic = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.IS_MUSIC));
-            if (isMusic != null && isMusic.equals("")) continue;
 
-            String title = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
-            results.add(title);
-        }
-
-        cursor.close();
-        return results;
-    }
 
     /**
      * 根据音乐名称和艺术家来判断是否重复包含了

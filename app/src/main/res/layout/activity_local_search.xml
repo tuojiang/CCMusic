@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
+    android:id="@+id/search_ll"
     android:layout_height="match_parent"
-    tools:context="oyh.ccmusic.activity.LocalSearchActivity">
-    <SearchView
-         android:layout_centerHorizontal="true"
-         android:text="搜索音乐"
-         android:id="@+id/sv_local_music"
-         android:queryHint="搜索音乐"
-         android:iconifiedByDefault="true"
-         android:layout_width="match_parent"
-         android:layout_height="50dp">
-    </SearchView>
-    <ListView
-        android:id="@+id/lv_search_local"
-        android:layout_marginTop="10dp"
-        android:background="@color/colorPrimaryDark"
-        android:layout_below="@+id/sv_local_music"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    android:orientation="vertical"
+    >
 
-    </ListView>
-</RelativeLayout>
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        style="@style/ToolbarStyle"
+        android:background="@color/main_top_color"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="本地音乐"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="@drawable/ic_action_back"
+        />
+
+    <ListView
+        android:id="@+id/lv_music"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+</LinearLayout>

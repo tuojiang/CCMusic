@@ -17,4 +17,6 @@
     <color name="red_dark">#C62828</color>
     <color name="red_trans">#99F44336</color>
     <color name="colorContract">#09C</color>
+    <color name="shadow">#cc222222</color>
+    <color name="Red_800">#ffb93221</color>
 </resources>

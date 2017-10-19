@@ -16,4 +16,6 @@
     <string name="artist_songs_albums_string">%1$d首歌,%2$d张专辑</string>
     <string name="artist_songs__string">%1$d首歌</string>
     <string name="genres_songs__string">%1$s首歌</string>
+    <string name="menu_search">搜索</string>
+    <string name="menu_setting">设置</string>
 </resources>
