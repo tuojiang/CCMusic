@@ -97,9 +97,15 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         mActivity = (MainActivity) activity;
     }
 
+
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public void onResume() {
+        int index = (int) MusicUtils.get(AppliContext.sContext,"searchps",0);
+        currentPos=index;
+        seekTime();
+
+        super.onResume();
+        Log.e("Resume","resume");
     }
 
     private  class MyHandler extends Handler {

@@ -128,6 +128,7 @@ public class MainActivity extends FragmentActivity {
         //初始化InitImageView
         InitImageView();
 
+        //引导层
         setGuideView();
 
         //注册广播
@@ -491,7 +492,6 @@ public class MainActivity extends FragmentActivity {
         if (requestCode==1){
             int index=data.getIntExtra("index",0);
             callBack.play(index);
-            Log.e("index activity","index="+index);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
