@@ -16,20 +16,29 @@
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         android:background="@color/main_top_color">
+
         <ImageView
             android:id="@+id/iv_darwer_btn"
             android:src="@drawable/darwer_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
         <TextView
         android:id="@+id/tv_toolbar_search"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-            android:layout_marginLeft="140dp"
+            android:layout_marginLeft="15dp"
         android:layout_gravity="center"
         android:drawableLeft="@drawable/search_drawable_left"
         android:text="搜索"
         android:textColor="#ffff" />
+
+        <ImageView
+            android:id="@+id/iv_chang_view"
+            android:src="@drawable/bt_chang_view"
+            android:layout_marginLeft="80dp"
+            android:layout_width="33dp"
+            android:layout_height="33dp" />
     </android.support.v7.widget.Toolbar>
     <LinearLayout
         android:id="@+id/linearLayout1"

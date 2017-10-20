@@ -72,6 +72,7 @@ public class MainActivity extends FragmentActivity {
     private TextView artistTextview;
     private TextView genresTextview;
     private ImageView darwerImageView;
+    private ImageView changViewImage;
     public LinearLayout linearLayout;
     public LinearLayout linearLayout1;
     public DrawerLayout drawerLayout;
@@ -325,6 +326,14 @@ public class MainActivity extends FragmentActivity {
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
+        changViewImage=findViewById(R.id.iv_chang_view);
+        changViewImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //TODO girdview替换listview
+            }
+        });
+
         navigationView=findViewById(R.id.navigation_view);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override

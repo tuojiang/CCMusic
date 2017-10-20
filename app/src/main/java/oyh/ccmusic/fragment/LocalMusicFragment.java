@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -101,9 +102,8 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     @Override
     public void onResume() {
         int index = (int) MusicUtils.get(AppliContext.sContext,"searchps",0);
-        currentPos=index;
-        seekTime();
-
+            currentPos = index;
+            seekTime();
         super.onResume();
         Log.e("Resume","resume");
     }
