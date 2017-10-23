@@ -3,11 +3,11 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/item_mymusic"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/ic_music_ico"
             android:title="我的乐库"></item>
         <item
             android:id="@+id/item_design"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/ic_version_ico"
             android:title="设置"></item>
     </group>
 </menu>

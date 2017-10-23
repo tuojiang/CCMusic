@@ -1,10 +1,14 @@
 package oyh.ccmusic.fragment;
 
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -13,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,8 +37,15 @@ import static oyh.ccmusic.util.MusicUtils.queryArtistItem;
 public class ArtistMusicFragment extends Fragment {
 
     private ListView mListView;
+    private GridView mGridView;
+    public static Boolean isGridView;
+    private UpdateViewReceiver updateViewReceiver;
+    private View gridView;
+    private String UPDATE_VIEW="oyh.ccmusic.updateview";
     private MainActivity mActivity;
     private ArtistListAdapter adapter;
+    private ArtistListAdapter gridadapter;
+    private ArtistListAdapter listadapter;
     private FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction transaction;
     public ArtistMusicFragment() {
@@ -51,12 +63,56 @@ public class ArtistMusicFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_artist_music, null);
+        gridView=layout;
         adapter=new ArtistListAdapter(mActivity);
         mListView=layout.findViewById(R.id.lv_artist_music);
+        mGridView=layout.findViewById(R.id.lv_artist_music_grid);
         mListView.setAdapter(adapter);
         mListView.setOnItemClickListener(mMusicItemClickListener);
+        mGridView.setOnItemClickListener(mMusicItemClickListener);
+        mGridView.setVisibility(View.GONE);
         return layout;
     }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(UPDATE_VIEW);
+        updateViewReceiver=new UpdateViewReceiver();
+        mActivity.registerReceiver(updateViewReceiver, intentFilter);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    private class UpdateViewReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            isGridView=intent.getBooleanExtra("isGridView",true);
+            updateLayout(isGridView);
+        }
+    }
+
+    private void updateLayout(boolean isGrid) {
+        if (isGrid) {
+            if (mGridView == null)
+            {
+                mGridView = gridView.findViewById(R.id.lv_album_music_grid);
+            }
+            mGridView.setVisibility(View.VISIBLE);
+            gridadapter = new ArtistListAdapter(true);
+            mGridView.setAdapter(gridadapter);
+            mListView.setVisibility(View.GONE);
+        } else {
+            if (mListView == null)
+            {
+                mListView = gridView.findViewById(R.id.lv_album_music);
+            }
+            listadapter = new ArtistListAdapter(false);
+            mListView.setVisibility(View.VISIBLE);
+            mListView.setAdapter(listadapter);
+            mGridView.setVisibility(View.GONE);
+        }
+    }
+
     /**
      * 监听歌曲点击事件
      */
@@ -76,11 +132,15 @@ public class ArtistMusicFragment extends Fragment {
 
 
     public class ArtistListAdapter extends BaseAdapter{
+        private boolean isGrid=false;
         private LayoutInflater inflater;
         class ViewHolder{
             ImageView icoView;
             TextView artistView;
             TextView albumAndSongView;
+        }
+        public ArtistListAdapter(boolean isView) {
+            isGrid=isView;
         }
         public ArtistListAdapter(Context context) {
             inflater = LayoutInflater.from(context);
@@ -105,7 +165,12 @@ public class ArtistMusicFragment extends Fragment {
         public View getView(int i, View view, ViewGroup viewGroup) {
             ViewHolder viewHolder;
             if (view==null){
-                view=View.inflate(AppliContext.sContext,R.layout.artist_music_item,null);
+                if (isGrid==false) {
+                    view=View.inflate(AppliContext.sContext,R.layout.artist_music_item,null);
+                }else {
+                    view=View.inflate(AppliContext.sContext,R.layout.artist_music_grid_item,null);
+                }
+
                 viewHolder=new ViewHolder();
                 viewHolder.icoView=view.findViewById(R.id.iv_artist_layout_ico);
                 viewHolder.artistView=view.findViewById(R.id.tv_artist_list_artist);

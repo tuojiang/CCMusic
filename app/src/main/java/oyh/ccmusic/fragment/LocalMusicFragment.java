@@ -4,7 +4,10 @@ package oyh.ccmusic.fragment;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
@@ -12,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
@@ -23,6 +27,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -60,6 +65,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private MainActivity mActivity;
     private int mProgress;      //进度条
     private ListView mListView;
+    private GridView mGridView;
     private ImageView mIcon;
     private static SeekBar seekBar;
     public SeekBar seekBarPlay;
@@ -76,12 +82,18 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private Button nextBtn;
     private ImageButton playBtn;
     private Button preBtn;
+    public static Boolean isGridView;
+    public View gridView;
     private MyHandler mHandler = new MyHandler();
+    private UpdateViewReceiver updateViewReceiver;
     private FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction transaction;
     private static SimpleDateFormat format = new SimpleDateFormat("mm:ss");
     private ArrayList<Music> mMediaLists = new ArrayList<>();
     private LocalMusicListAdapter adapter= new LocalMusicListAdapter(mActivity);
+    private LocalMusicListAdapter gridadapter;
+    private LocalMusicListAdapter listadapter;
+    private String UPDATE_VIEW="oyh.ccmusic.updateview";
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -105,7 +117,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             currentPos = index;
             seekTime();
         super.onResume();
-        Log.e("Resume","resume");
     }
 
     private  class MyHandler extends Handler {
@@ -137,9 +148,18 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
 
     }
 
+    private class UpdateViewReceiver extends BroadcastReceiver{
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            isGridView=intent.getBooleanExtra("isGridView",true);
+            updateLayout(isGridView);
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mActivity.unregisterReceiver(updateViewReceiver);
         timer.cancel();
         timer = null;
     }
@@ -148,8 +168,19 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View layout=inflater.inflate(R.layout.fragment_local_music_list, null);
+        gridView=layout;
         setupViews(layout);
         return layout;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(UPDATE_VIEW);
+        updateViewReceiver=new UpdateViewReceiver();
+        mActivity.registerReceiver(updateViewReceiver, intentFilter);
+        super.onActivityCreated(savedInstanceState);
     }
 
     /**
@@ -157,6 +188,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
      * @param layout
      */
     private void setupViews(View layout) {
+        mGridView=layout.findViewById(R.id.app_grid);
         mListView=layout.findViewById(R.id.music_list_view);
         seekBar = layout.findViewById(R.id.seek_music);
         mTitleTextView=layout.findViewById(R.id.tv_music_list_title);
@@ -168,8 +200,10 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         currentTimeTxt = layout.findViewById(R.id.played_time);
         totalTimeTxt = layout.findViewById(R.id.duration_time);
         mListView.setOnItemClickListener(mMusicItemClickListener);
-        registerForContextMenu(mListView);
+        mGridView.setOnItemClickListener(mMusicItemClickListener);
         mListView.setAdapter(adapter);
+//        mGridView.setAdapter(adapter);
+        mGridView.setVisibility(View.GONE);
         seekBar.setOnSeekBarChangeListener(new MySeekBar());
         playBtn.setOnClickListener(this);
         nextBtn.setOnClickListener(this);
@@ -196,6 +230,28 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             }
         }).start();
 
+    }
+
+    private void updateLayout(boolean isGrid) {
+        if (isGrid) {
+            if (mGridView == null)
+            {
+                mGridView = gridView.findViewById(R.id.app_grid);
+            }
+            mGridView.setVisibility(View.VISIBLE);
+            gridadapter = new LocalMusicListAdapter(true);
+            mGridView.setAdapter(gridadapter);
+            mListView.setVisibility(View.GONE);
+        } else {
+            if (mListView == null)
+            {
+                mListView = gridView.findViewById(R.id.music_list_view);
+            }
+            listadapter = new LocalMusicListAdapter(false);
+            mListView.setVisibility(View.VISIBLE);
+            mListView.setAdapter(listadapter);
+            mGridView.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -290,9 +346,13 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     public class LocalMusicListAdapter extends BaseAdapter {
         private static final String TAG = "LocalMusicListAdapter";
         private View view;
+        private boolean isGrid=false;
         public LocalMusicListAdapter(MainActivity mActivity) {
-        }
 
+        }
+        public LocalMusicListAdapter(boolean isView) {
+            isGrid=isView;
+        }
         public void setPlayingPosition() {
             notifyDataSetChanged();
         }
@@ -320,7 +380,11 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             ViewHolder viewHolder= null;
             MyListener myListener=null;
             if (convertView == null) {
-                convertView = View.inflate(AppliContext.sContext, R.layout.local_music_item, null);
+                if (isGrid==false) {
+                    convertView = View.inflate(AppliContext.sContext, R.layout.local_music_item, null);
+                }else {
+                convertView = View.inflate(AppliContext.sContext, R.layout.local_music_grid_item, null);
+                }
                 viewHolder = new ViewHolder();
                 viewHolder.icon = convertView.findViewById(R.id.music_list_icon);
                 viewHolder.title = convertView.findViewById(R.id.tv_music_list_title);

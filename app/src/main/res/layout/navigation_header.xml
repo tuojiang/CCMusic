@@ -2,13 +2,24 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="200dp"
-    android:background="#30469b">
+    android:background="?attr/colorPrimary">
+    <oyh.ccmusic.util.CircleImageView
+        android:id="@+id/ico_iamge"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:src="@mipmap/img"
+        android:layout_centerInParent="true"
+        >
+
+    </oyh.ccmusic.util.CircleImageView>
+
+
     <TextView
-        android:id="@+id/header_tv"
+        android:id="@+id/mail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="HeaderLayout"
-        android:textColor="#ffffff"
-        android:textSize="25sp" />
+        android:layout_alignParentBottom="true"
+        android:text="yihongou@tcl.com"
+        android:textColor="#FFF"
+        android:textSize="14sp" />
 </RelativeLayout>

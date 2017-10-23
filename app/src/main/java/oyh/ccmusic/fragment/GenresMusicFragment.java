@@ -1,10 +1,14 @@
 package oyh.ccmusic.fragment;
 
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -13,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,7 +38,14 @@ public class GenresMusicFragment extends Fragment {
 
     private MainActivity mActivity;
     private ListView mListView;
+    private GridView mGridView;
+    public static Boolean isGridView;
+    private UpdateViewReceiver updateViewReceiver;
+    private View gridView;
+    private String UPDATE_VIEW="oyh.ccmusic.updateview";
     private GenresListAdapter adapter;
+    private GenresListAdapter gridadapter;
+    private GenresListAdapter listadapter;
     private FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction transaction;
 
@@ -53,11 +65,54 @@ public class GenresMusicFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_genres_music, container, false);
+        gridView=layout;
         mListView=layout.findViewById(R.id.lv_genres_music);
+        mGridView=layout.findViewById(R.id.lv_genres_music_grid);
         adapter=new GenresListAdapter();
         mListView.setAdapter(adapter);
         mListView.setOnItemClickListener(mMusicItemClickListener);
+        mGridView.setOnItemClickListener(mMusicItemClickListener);
+        mGridView.setVisibility(View.GONE);
         return layout;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(UPDATE_VIEW);
+        updateViewReceiver=new UpdateViewReceiver();
+        mActivity.registerReceiver(updateViewReceiver, intentFilter);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    private class UpdateViewReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            isGridView=intent.getBooleanExtra("isGridView",true);
+            updateLayout(isGridView);
+        }
+    }
+
+    private void updateLayout(boolean isGrid) {
+        if (isGrid) {
+            if (mGridView == null)
+            {
+                mGridView = gridView.findViewById(R.id.lv_album_music_grid);
+            }
+            mGridView.setVisibility(View.VISIBLE);
+            gridadapter = new GenresListAdapter(true);
+            mGridView.setAdapter(gridadapter);
+            mListView.setVisibility(View.GONE);
+        } else {
+            if (mListView == null)
+            {
+                mListView = gridView.findViewById(R.id.lv_album_music);
+            }
+            listadapter = new GenresListAdapter(false);
+            mListView.setVisibility(View.VISIBLE);
+            mListView.setAdapter(listadapter);
+            mGridView.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -79,12 +134,15 @@ public class GenresMusicFragment extends Fragment {
     };
 
     public class GenresListAdapter extends BaseAdapter{
+        private boolean isGrid=false;
         class ViewHolder{
             ImageView ico;
             TextView title;
             TextView songView;
         }
-
+        public GenresListAdapter(boolean isView) {
+            isGrid=isView;
+        }
         public GenresListAdapter() {
         }
 
@@ -107,7 +165,11 @@ public class GenresMusicFragment extends Fragment {
         public View getView(int i, View view, ViewGroup viewGroup) {
             ViewHolder viewHolder;
             if (view==null){
+                if (isGrid==false) {
                 view=View.inflate(AppliContext.sContext,R.layout.genres_music_item,null);
+                }else {
+                view=View.inflate(AppliContext.sContext,R.layout.genres_music_grid_item,null);
+                }
                 viewHolder=new ViewHolder();
                 viewHolder.ico=view.findViewById(R.id.iv_genres_layout_ico);
                 viewHolder.title=view.findViewById(R.id.tv_genres_list_genres);
@@ -121,7 +183,6 @@ public class GenresMusicFragment extends Fragment {
             viewHolder.ico.setImageBitmap(ico==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
             viewHolder.title.setText(music.getGenres());
             String amount= MusicUtils.map.get(music.getGenres());
-            //TODO 获取流派歌曲数量
             String songs = String.format( AppliContext.sContext.getResources().getString( R.string.genres_songs_string), amount);
             viewHolder.songView.setText(songs);
             return view;

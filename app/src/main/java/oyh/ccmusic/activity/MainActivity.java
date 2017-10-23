@@ -96,6 +96,8 @@ public class MainActivity extends FragmentActivity {
     private ArrayList<Fragment> fragmentArrayList;
     private FragmentManager fragmentManager;
     public static Context context;
+    public static Boolean isGridView  = false;
+    private String UPDATE_VIEW="oyh.ccmusic.updateview";
     private android.support.v4.app.FragmentTransaction transaction;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -331,6 +333,12 @@ public class MainActivity extends FragmentActivity {
             @Override
             public void onClick(View view) {
                 //TODO girdview替换listview
+                isGridView = !isGridView;
+                Intent intent = new Intent();
+                intent.setAction(UPDATE_VIEW);
+                intent.putExtra("isGridView", isGridView);
+                sendBroadcast(intent);
+
             }
         });
 

@@ -29,10 +29,13 @@ public class MyloveMusicListAdapter extends BaseAdapter {
     private static final String TAG = "MyloveMusicListAdapter";
     private static SimpleDateFormat format = new SimpleDateFormat("mm:ss");
     private ArrayList<Music> mMyLoveList;
+    private boolean isGrid=false;
     public MyloveMusicListAdapter(ArrayList<Music> list) {
             mMyLoveList=list;
     }
-
+    public MyloveMusicListAdapter(boolean isView) {
+        isGrid=isView;
+    }
     @Override
     public int getCount() {
         return mMyLoveList==null? MusicUtils.sMusicSQlList.size():mMyLoveList.size();
@@ -52,7 +55,12 @@ public class MyloveMusicListAdapter extends BaseAdapter {
     public View getView(int i, View view, ViewGroup viewGroup) {
         ViewHolder viewHolder=null;
         if (view==null){
-            view=View.inflate(AppliContext.sContext, R.layout.mylove_music_item,null);
+            if (isGrid==false) {
+                view=View.inflate(AppliContext.sContext, R.layout.mylove_music_item,null);
+            }else {
+                view=View.inflate(AppliContext.sContext, R.layout.mylove_music_grid_item,null);
+            }
+
             viewHolder=new ViewHolder();
             viewHolder.icon=view.findViewById(R.id.music_mllist_icon);
             viewHolder.title=view.findViewById(R.id.tv_music_mllist_title);

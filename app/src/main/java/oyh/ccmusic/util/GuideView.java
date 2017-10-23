@@ -245,7 +245,6 @@ public class GuideView extends RelativeLayout implements ViewTreeObserver.OnGlob
 
         if (customGuideView != null) {
 
-            //            LayoutParams guideViewParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             if (direction != null) {
                 int width = this.getWidth();
                 int height = this.getHeight();
@@ -291,7 +290,6 @@ public class GuideView extends RelativeLayout implements ViewTreeObserver.OnGlob
                 guideViewParams.setMargins(offsetX, offsetY, -offsetX, -offsetY);
             }
 
-            //            guideViewLayout.addView(customGuideView);
 
             this.addView(customGuideView, guideViewParams);
         }

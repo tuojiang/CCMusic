@@ -4,8 +4,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
+    <GridView
+        android:id="@+id/lv_artist_music_grid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:padding="10dp"
+        android:verticalSpacing="10dp"
+        android:horizontalSpacing="5dp"
+        android:numColumns="2"
+        android:columnWidth="60dp"
+        android:stretchMode="columnWidth"
+        android:gravity="center"/>
     <ListView
         android:id="@+id/lv_artist_music"
+        android:layout_weight="1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
