@@ -332,7 +332,6 @@ public class MainActivity extends FragmentActivity {
         changViewImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO girdview替换listview
                 isGridView = !isGridView;
                 Intent intent = new Intent();
                 intent.setAction(UPDATE_VIEW);
@@ -640,22 +639,5 @@ public class MainActivity extends FragmentActivity {
                 })
                 .build();
         guideView2.show();
-    }
-    /**
-     * 权限获取
-     * @param activity
-     */
-    public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
     }
 }

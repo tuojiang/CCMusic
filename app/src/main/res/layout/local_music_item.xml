@@ -2,8 +2,12 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="10dp">
-
+<RelativeLayout
+    android:id="@+id/local_rl_annotion"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <View
         android:id="@+id/music_list_selected"
         android:background="@android:color/holo_blue_dark"
@@ -43,7 +47,17 @@
         android:layout_below="@id/tv_music_list_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-
+    <oyh.ccmusic.util.BarChartView
+        android:id="@+id/myRealMapView"
+        android:layout_width="30dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="17dp"
+        app:barcharMarginLeft="5dp"
+        app:barchartCount="3"
+        android:layout_toLeftOf="@+id/iv_aplist_btn"
+        app:barchartDuration="300"
+        app:barchartHeight="15dp"
+        app:barchartWidth="10dp" />
     <ImageView
         android:id="@+id/iv_aplist_btn"
         android:paddingRight="5dp"
@@ -53,5 +67,5 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
-
+</RelativeLayout>
 </RelativeLayout>

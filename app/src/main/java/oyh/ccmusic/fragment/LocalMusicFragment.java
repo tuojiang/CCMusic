@@ -22,6 +22,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -32,12 +33,14 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 
 import oyh.ccmusic.R;
@@ -47,6 +50,7 @@ import oyh.ccmusic.adapter.LrcProcess;
 import oyh.ccmusic.adapter.LrcView;
 import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
+import oyh.ccmusic.util.BarChartView;
 import oyh.ccmusic.util.MusicUtils;
 
 /**
@@ -59,6 +63,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private int currentPos=0;         // 记录当前正在播放的音乐
     private int currentPlayTime=0;
     private int currentAdd=0;
+    private String tagb;
     private int currentPosition=1;
     private boolean mFlag = true;
     public LrcView lrcView; // 自定义歌词视图
@@ -82,6 +87,9 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private Button nextBtn;
     private ImageButton playBtn;
     private Button preBtn;
+    private BarChartView realView;
+    private BarChartView realView2;
+    private List viewList=new ArrayList();
     public static Boolean isGridView;
     public View gridView;
     private MyHandler mHandler = new MyHandler();
@@ -188,6 +196,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
      * @param layout
      */
     private void setupViews(View layout) {
+//        realMapView=mListView.getChildAt(0).findViewById(R.id.myRealMapView);
         mGridView=layout.findViewById(R.id.app_grid);
         mListView=layout.findViewById(R.id.music_list_view);
         seekBar = layout.findViewById(R.id.seek_music);
@@ -291,6 +300,26 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         public void onItemClick(AdapterView<?> parent, View view, int position,
                                 long id) {
                 play(position);
+            if (tagb==null) {
+                currentAdd = position;
+                realView = (BarChartView) viewList.get(position);
+                realView.setVisibility(View.VISIBLE);
+                realView.start();
+                tagb="true";
+            }else {
+                if (currentAdd==position){
+                    realView = (BarChartView) viewList.get(position);
+                    realView.setVisibility(View.VISIBLE);
+                    realView.start();
+                }else {
+                    realView = (BarChartView) viewList.get(currentAdd);
+                    realView.setVisibility(View.GONE);
+                    realView = (BarChartView) viewList.get(position);
+                    realView.setVisibility(View.VISIBLE);
+                    realView.start();
+                    currentAdd=position;
+                }
+            }
             int a=MusicUtils.sMusicList.size();
         }
     };
@@ -315,8 +344,10 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     public void playerMusicByIBinder() {
         boolean playerState = mActivity.getLocalMusicService().isPlayerMusic();
         if (playerState) {
+            realView.start();
             playBtn.setImageResource(R.drawable.player_btn_pause_normal);
         } else {
+            realView.stop();
             playBtn.setImageResource(R.drawable.player_btn_play_normal);
         }
     }
@@ -386,11 +417,13 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
                 convertView = View.inflate(AppliContext.sContext, R.layout.local_music_grid_item, null);
                 }
                 viewHolder = new ViewHolder();
+                viewHolder.annotion=convertView.findViewById(R.id.local_rl_annotion);
                 viewHolder.icon = convertView.findViewById(R.id.music_list_icon);
                 viewHolder.title = convertView.findViewById(R.id.tv_music_list_title);
                 viewHolder.artist = convertView.findViewById(R.id.tv_music_list_artist);
                 viewHolder.menuImage=convertView.findViewById(R.id.iv_aplist_btn);
                 viewHolder.mark = convertView.findViewById(R.id.music_list_selected);
+                viewHolder.realMapView=convertView.findViewById(R.id.myRealMapView);
                 convertView.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder)convertView.getTag();
@@ -405,7 +438,8 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             viewHolder.title.setText(music.getTitle());
             viewHolder.artist.setText(music.getArtist());
             viewHolder.menuImage.setOnClickListener(myListener);
-
+            viewHolder.realMapView.setVisibility(View.GONE);
+            viewList.add(viewHolder.realMapView);
             view=convertView;
             return convertView;
         }
@@ -462,6 +496,8 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             TextView title, artist;
             ImageView menuImage;
             View mark;
+            BarChartView realMapView;
+            RelativeLayout annotion;
         }
     }
 }
