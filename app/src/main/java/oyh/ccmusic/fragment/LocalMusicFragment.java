@@ -8,6 +8,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
@@ -19,18 +21,24 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.RelativeLayout;
@@ -41,7 +49,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Timer;
 
 import oyh.ccmusic.R;
 import oyh.ccmusic.activity.AppliContext;
@@ -52,6 +59,9 @@ import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 import oyh.ccmusic.util.BarChartView;
 import oyh.ccmusic.util.MusicUtils;
+import oyh.ccmusic.util.SlidingUpPanelLayout;
+
+import static oyh.ccmusic.R.id.sliding_up_content_container;
 
 /**
  * 本地列表fragment
@@ -63,11 +73,17 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private int currentPos=0;         // 记录当前正在播放的音乐
     private int currentPlayTime=0;
     private int currentAdd=0;
+    private int width;
+    private int hight;
     private String tagb;
     private int currentPosition=1;
     private boolean mFlag = true;
     public LrcView lrcView; // 自定义歌词视图
     private MainActivity mActivity;
+    private SlidingUpPanelLayout mSlidingUpPanelLayout;
+    private LinearLayout mlinearLayout;
+    private View mfragmwntlinearLayout;
+    private android.app.Fragment fragment;
     private int mProgress;      //进度条
     private ListView mListView;
     private GridView mGridView;
@@ -80,7 +96,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private TextView mArtTextView;
     private static TextView currentTimeTxt;
     private static TextView totalTimeTxt;
-    private Timer timer;
     private boolean isSeekBarChanging;
     private ImageView mIcoImageView;
     private Music music;
@@ -118,12 +133,20 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         mActivity = (MainActivity) activity;
     }
 
+    @Override
+    public void onStart() {
+        fragmentManager=getFragmentManager();
+        transaction = fragmentManager.beginTransaction();
+        MusicDetailFragment musicDetailFragment=new MusicDetailFragment();
+        transaction.replace(sliding_up_content_container,musicDetailFragment).addToBackStack(null).commit();
+        super.onStart();
+    }
 
     @Override
     public void onResume() {
         int index = (int) MusicUtils.get(AppliContext.sContext,"searchps",0);
-            currentPos = index;
-            seekTime();
+                currentPos = index;
+                seekTime();
         super.onResume();
     }
 
@@ -168,8 +191,6 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     public void onDestroy() {
         super.onDestroy();
         mActivity.unregisterReceiver(updateViewReceiver);
-        timer.cancel();
-        timer = null;
     }
 
     @Override
@@ -196,7 +217,39 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
      * @param layout
      */
     private void setupViews(View layout) {
-//        realMapView=mListView.getChildAt(0).findViewById(R.id.myRealMapView);
+        mlinearLayout = layout.findViewById(R.id.control_panel);
+        mfragmwntlinearLayout = layout.findViewById(R.id.v_local_up_listview);
+        mlinearLayout.setVisibility(View.VISIBLE);
+        mSlidingUpPanelLayout = layout.findViewById(R.id.sliding_layout);
+        mSlidingUpPanelLayout.setPanelSlideListener(new SlidingUpPanelLayout.SimplePanelSlideListener() {
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+                if(slideOffset>0.8f && mlinearLayout!=null) {
+                    //判断上滑快到顶部时隐藏
+                    if(mlinearLayout.getVisibility()==View.VISIBLE) {
+                        mlinearLayout.setVisibility(View.GONE);
+                    }
+                    hideViews();
+                }else if(slideOffset<=0.3f && mlinearLayout!=null){
+                    //判断上滑快到底部时显示
+                    if(mlinearLayout.getVisibility()!=View.VISIBLE) {
+                        mlinearLayout.setVisibility(View.VISIBLE);
+                    }
+                    showViews();
+                }
+            }
+
+            @Override
+            public void onPanelExpanded(View panel) {
+//                mlinearLayout.setVisibility(View.GONE);
+//                mActivity.Visiable();import android.widget.FrameLayout.LayoutParams
+            }
+
+            @Override
+            public void onPanelCollapsed(View panel) {
+                showViews();
+            }
+        });
         mGridView=layout.findViewById(R.id.app_grid);
         mListView=layout.findViewById(R.id.music_list_view);
         seekBar = layout.findViewById(R.id.seek_music);
@@ -241,6 +294,34 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
 
     }
 
+    /**
+     * 隐藏toolbar
+     */
+    private void hideViews() {
+
+        mActivity.toolbar.animate().translationY(-mActivity.toolbar.getHeight()).setInterpolator(new AccelerateInterpolator(2));
+        mActivity.linearLayout.animate().translationY(-mActivity.linearLayout.getHeight()).setInterpolator(new AccelerateInterpolator(2));
+        mActivity.mviewPager.animate().translationY(-mActivity.linearLayout.getHeight()).setInterpolator(new AccelerateInterpolator(2));
+
+    }
+
+
+    /**
+     * 显示toolbar
+     */
+    private void showViews() {
+
+        mActivity.toolbar.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
+        mActivity.linearLayout.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
+        mActivity.mviewPager.animate().translationY(0).setInterpolator(new DecelerateInterpolator(2));
+
+    }
+
+
+    /**
+     * 更新grid view视图
+     * @param isGrid
+     */
     private void updateLayout(boolean isGrid) {
         if (isGrid) {
             if (mGridView == null)
@@ -365,11 +446,12 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
                 break;
 
             case R.id.music_list_icon:
-                mActivity.Visiable();
-                fragmentManager=getFragmentManager();
-                transaction = fragmentManager.beginTransaction();
-                MusicDetailFragment musicDetailFragment=new MusicDetailFragment();
-                transaction.add(R.id.music_detail_fragment,musicDetailFragment).addToBackStack(null).commit();
+                //替换为面板滑动
+//                mActivity.Visiable();
+//                fragmentManager=getFragmentManager();
+//                transaction = fragmentManager.beginTransaction();
+//                MusicDetailFragment musicDetailFragment=new MusicDetailFragment();
+//                transaction.add(R.id.music_detail_fragment,musicDetailFragment).addToBackStack(null).commit();
                 break;
         }
     }
@@ -438,7 +520,10 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             viewHolder.title.setText(music.getTitle());
             viewHolder.artist.setText(music.getArtist());
             viewHolder.menuImage.setOnClickListener(myListener);
-            viewHolder.realMapView.setVisibility(View.GONE);
+            if (viewHolder.realMapView!=null) {
+                viewHolder.realMapView.setVisibility(View.GONE);
+                //TODO 设置后 视图切换报错
+            }
             viewList.add(viewHolder.realMapView);
             view=convertView;
             return convertView;

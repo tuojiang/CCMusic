@@ -78,7 +78,7 @@ public class MainActivity extends FragmentActivity {
     public DrawerLayout drawerLayout;
     public NavigationView navigationView;
     private ImageView cursor;
-    private Toolbar toolbar;
+    public Toolbar toolbar;
     private TextView toolbarsearch;
     private GuideView guideView;
     private GuideView guideView3;
@@ -90,7 +90,7 @@ public class MainActivity extends FragmentActivity {
     //图片宽度
     private int bmpW;
     private Handler mHand = null;
-    private ViewPager mviewPager;
+    public ViewPager mviewPager;
     private ContentObserver mDatabaseListener = null;
     private int currentIndex;
     private ArrayList<Fragment> fragmentArrayList;
@@ -516,6 +516,7 @@ public class MainActivity extends FragmentActivity {
     protected void onDestroy() {
         unregisterReceiver(mScanSDCardReceiver);
         unregisterReceiver(mHeadSetReceiver);
+        callBack.stop();
         super.onDestroy();
 
     }

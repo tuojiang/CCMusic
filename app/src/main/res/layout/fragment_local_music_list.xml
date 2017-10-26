@@ -3,8 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/local_ll_list_container"
     android:orientation="vertical"
     >
+    <oyh.ccmusic.util.SlidingUpPanelLayout
+        xmlns:sothree="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/sliding_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        >
+    <LinearLayout
+        android:id="@+id/ll_local_up_listview"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="405dp">
     <GridView
         android:id="@+id/app_grid"
         android:layout_width="fill_parent"
@@ -26,10 +40,15 @@
         />
 
     <View
+        android:id="@+id/v_local_up_listview"
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:background="@color/main_top_color" />
-
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
     <LinearLayout
         android:id="@+id/control_panel"
         android:layout_width="match_parent"
@@ -120,4 +139,10 @@
 
         </RelativeLayout>
     </LinearLayout>
+        <FrameLayout
+            android:id="@+id/sliding_up_content_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+    </oyh.ccmusic.util.SlidingUpPanelLayout>
 </LinearLayout>

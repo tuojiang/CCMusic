@@ -9,7 +9,6 @@
     android:layout_height="match_parent"
     android:id="@+id/music_detail_fragment"
     android:orientation="vertical">
-
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -36,7 +35,7 @@
         <ImageView
             android:id="@+id/iv_chang_view"
             android:src="@drawable/bt_chang_view"
-            android:layout_marginLeft="80dp"
+            android:layout_marginLeft="75dp"
             android:layout_width="33dp"
             android:layout_height="33dp" />
     </android.support.v7.widget.Toolbar>

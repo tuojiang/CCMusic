@@ -178,7 +178,6 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         bt_play.setOnClickListener(this);
         bt_pre.setOnClickListener(this);
         bt_next.setOnClickListener(this);
-        mBack.setOnClickListener(this);
 
         mCurtListSong.setOnClickListener(this);
         mShuffleSong.setOnClickListener(this);
@@ -231,11 +230,6 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
                     mHandler.post(mRunnable);
                 }
 
-                break;
-            case R.id.iv_play_back:
-                getActivity().onBackPressed();
-                //TODO 返回后标题栏还原
-//                mActivity.Visiable();
                 break;
             case R.id.im_curplaylist:
                 mShuffleSong.setVisibility(View.VISIBLE);

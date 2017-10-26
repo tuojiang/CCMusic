@@ -84,6 +84,7 @@ public class LocalMusicService extends Service{
         int itemPre();
         int mlovePre();
         void start();
+        void stop();
         int playMyLove(int position);
         void isSeekto(int m_send);
         void isPlayPre();
@@ -345,6 +346,12 @@ public class LocalMusicService extends Service{
         public void start() {
             mPlayer.start();
             updateAppWidget();
+        }
+
+        @Override
+        public void stop() {
+            mPlayer.stop();
+            mPlayer.release();
         }
 
         @Override

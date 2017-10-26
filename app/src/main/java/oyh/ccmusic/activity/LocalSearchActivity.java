@@ -38,6 +38,7 @@ public class LocalSearchActivity extends AppCompatActivity {
     private ListView mLvMusic;
     private MenuItem searchItem;
     private ArrayList<String> localSearch;
+    private LocalSearchActivity mActivity;
     private FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction transaction;
     @Override
@@ -56,6 +57,7 @@ public class LocalSearchActivity extends AppCompatActivity {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mLvMusic = (ListView) findViewById(R.id.lv_music);
         mLvMusic.setOnItemClickListener(mSearchItemClickListener);
+
     }
 
     /**
@@ -67,7 +69,6 @@ public class LocalSearchActivity extends AppCompatActivity {
                                 long id) {
             String name = localSearch.get(position);
             int index = MusicUtils.queryNameToList(name);
-            Log.e("index onItemClick","index="+index);
             Intent data = new Intent();
             data.putExtra("index",index);
             setResult(1, data);
@@ -92,7 +93,12 @@ public class LocalSearchActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 } else {
-                    finish();
+//                    Intent data = new Intent();
+//                    setResult(2, data);
+//                    MusicUtils.put("issearch",0);
+//                    finish();
+                    Intent intent = new Intent(LocalSearchActivity.this,MainActivity.class);
+                    startActivity(intent);
                 }
             }
         });
