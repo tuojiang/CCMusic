@@ -4,7 +4,6 @@ package oyh.ccmusic.fragment;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +25,8 @@ import java.util.Timer;
 import oyh.ccmusic.R;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
+import oyh.ccmusic.util.ImageUtils;
+import oyh.ccmusic.util.MusicMemoryCacheUtils;
 import oyh.ccmusic.util.MusicUtils;
 
 /**
@@ -109,9 +110,13 @@ public class GenresPlayFragment extends Fragment implements View.OnClickListener
             int totalTime=music.getLength();
             seekBar.setMax(music.getLength());
             String total = format.format(new Date(totalTime));
-            Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPosition).getImage());
-            coverImage.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
-                    getResources(), R.mipmap.img) : icon);
+            //添加LruChache
+//            Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPosition).getImage());
+//            coverImage.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
+//                    getResources(), R.mipmap.img) : icon);
+            Bitmap icon = MusicMemoryCacheUtils.getInstance().load(MusicUtils.sMusicList.get(currentPosition).getImage());
+            coverImage.setImageBitmap(icon==null ? ImageUtils
+                    .scaleBitmap(R.mipmap.img) : ImageUtils.scaleBitmap(icon));
             totalTimeTxt.setText(total);
             currentTimeTxt.setText(currentProgress);
 

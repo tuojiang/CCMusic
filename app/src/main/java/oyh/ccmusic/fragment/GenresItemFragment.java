@@ -4,7 +4,6 @@ package oyh.ccmusic.fragment;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -21,6 +20,8 @@ import oyh.ccmusic.R;
 import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
+import oyh.ccmusic.util.ImageUtils;
+import oyh.ccmusic.util.MusicMemoryCacheUtils;
 import oyh.ccmusic.util.MusicUtils;
 
 /**
@@ -65,14 +66,17 @@ public class GenresItemFragment extends Fragment implements View.OnClickListener
      */
     public void initView(View view){
         Music musicIcoUp= (Music) MusicUtils.itemCommonList.get(0);
-        Bitmap ico= BitmapFactory.decodeFile(musicIcoUp.getImage());
         icoUp=view.findViewById(R.id.iv_genres_item_ico_up);
         genresName=view.findViewById(R.id.tv_genres_item_name);
         genrestSongs=view.findViewById(R.id.tv_genres_item_songs);
         iv_back=view.findViewById(R.id.iv_back_genres);
         iv_back.setOnClickListener(this);
         String amount= MusicUtils.map.get(musicIcoUp.getGenres());
-        icoUp.setImageBitmap(icoUp==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
+//        Bitmap ico= BitmapFactory.decodeFile(musicIcoUp.getImage());
+//        icoUp.setImageBitmap(icoUp==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
+        Bitmap ico= MusicMemoryCacheUtils.getInstance().load(musicIcoUp.getImage());
+        icoUp.setImageBitmap(icoUp==null? ImageUtils
+                .scaleBitmap(R.mipmap.img) : ImageUtils.scaleBitmap(ico));
         String songs =String.format(AppliContext.sContext.getResources().getString(R.string.genres_songs_string),amount);
         genrestSongs.setText(songs);
         genresName.setText(musicIcoUp.getGenres());
@@ -145,8 +149,11 @@ public class GenresItemFragment extends Fragment implements View.OnClickListener
             }
             Music music= (Music) getItem(i);
             viewHolder.title.setText(music.getTitle());
-            Bitmap ico= BitmapFactory.decodeFile(music.getImage());
-            viewHolder.ico.setImageBitmap(ico==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
+//            Bitmap ico= BitmapFactory.decodeFile(music.getImage());
+//            viewHolder.ico.setImageBitmap(ico==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
+            Bitmap ico= MusicMemoryCacheUtils.getInstance().load(music.getImage());
+            viewHolder.ico.setImageBitmap(ico==null? ImageUtils
+                    .scaleBitmap(R.mipmap.img) : ImageUtils.scaleBitmap(ico));
             viewHolder.artist.setText(music.getArtist());
             return view;
         }

@@ -23,8 +23,8 @@ public class LrcView extends TextView {
     private float height;		//歌词视图高度
     private Paint currentPaint;	//当前画笔对象
     private Paint notCurrentPaint;	//非当前画笔对象
-    private float textHeight = 25;	//文本高度
-    private float textSize = 18;		//文本大小
+    private float textHeight = 80;	//文本高度
+    private float textSize = 25;		//文本大小
     private int index = 0;		//list集合下标
 
 
@@ -78,8 +78,8 @@ public class LrcView extends TextView {
         currentPaint.setColor(Color.argb(210, 251, 248, 29));
         notCurrentPaint.setColor(Color.argb(140, 255, 255, 255));
 
-        currentPaint.setTextSize(24);
-        currentPaint.setTypeface(Typeface.SERIF);
+        currentPaint.setTextSize(33);
+        currentPaint.setTypeface(Typeface.SERIF);//设置字体样式
 
         notCurrentPaint.setTextSize(textSize);
         notCurrentPaint.setTypeface(Typeface.DEFAULT);

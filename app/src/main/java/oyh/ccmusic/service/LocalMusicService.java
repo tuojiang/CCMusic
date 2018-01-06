@@ -456,12 +456,16 @@ public class LocalMusicService extends Service{
         @Override
         public ArrayList<LrcContent> initLrcx(ArrayList<LrcContent> list,int index) {
             mLrcProcess = new LrcProcess();
-            //读取歌词文件
+            //
+            if (index>=MusicUtils.sMusicList.size()){
+                index = MusicUtils.sMusicList.size() - 1;
+            }
             mLrcProcess.readLRC(MusicUtils.sMusicList.get(index).getMusicPath());
             Log.e("init",MusicUtils.sMusicList.get(index).getMusicPath());
             //传回处理后的歌词文件
             lrcList = mLrcProcess.getLrcList();
             list= (ArrayList<LrcContent>) lrcList;
+
             return list;
         }
         /**

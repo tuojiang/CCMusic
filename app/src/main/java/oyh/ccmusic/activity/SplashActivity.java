@@ -29,6 +29,8 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         //去掉标题
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        //权限获取
+        verifyStoragePermissions(this);
         //全屏
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.welcome_splash_layout);
@@ -40,8 +42,6 @@ public class SplashActivity extends Activity {
               startActivity(new Intent(SplashActivity.this, MainActivity.class));
             }
         },2000);
-        //权限获取
-        verifyStoragePermissions(this);
     }
     /**
      * 权限获取

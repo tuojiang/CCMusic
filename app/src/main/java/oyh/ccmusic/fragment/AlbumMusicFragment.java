@@ -6,12 +6,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +24,8 @@ import oyh.ccmusic.R;
 import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
+import oyh.ccmusic.util.ImageUtils;
+import oyh.ccmusic.util.MusicMemoryCacheUtils;
 import oyh.ccmusic.util.MusicUtils;
 
 import static oyh.ccmusic.util.MusicUtils.queryItem;
@@ -127,7 +127,7 @@ public class AlbumMusicFragment extends Fragment {
             fragmentManager=getFragmentManager();
             transaction = fragmentManager.beginTransaction();
             AlbumItemFragment albumItemFragment=new AlbumItemFragment();
-            transaction.add(R.id.music_detail_fragment,albumItemFragment).addToBackStack(null).commit();
+            transaction.replace(R.id.music_detail_fragment,albumItemFragment).addToBackStack(null).commit();
         }
     };
 
@@ -178,10 +178,13 @@ public class AlbumMusicFragment extends Fragment {
                 viewHolder= (ViewHolder) view.getTag();
             }
             Music music= (Music) getItem(position);
-            Bitmap icon = BitmapFactory.decodeFile(music.getImage());
-            viewHolder.icoView.setImageBitmap(icon == null ?
-                    BitmapFactory.decodeResource(
-                            AppliContext.sContext.getResources(), R.mipmap.img) : icon);
+//            Bitmap icon = BitmapFactory.decodeFile(music.getImage());
+//            viewHolder.icoView.setImageBitmap(icon == null ?
+//                    BitmapFactory.decodeResource(
+//                            AppliContext.sContext.getResources(), R.mipmap.img) : icon);
+            Bitmap ico= MusicMemoryCacheUtils.getInstance().load(music.getImage());
+            viewHolder.icoView.setImageBitmap(ico==null? ImageUtils
+                    .scaleBitmap(R.mipmap.img) : ImageUtils.scaleBitmap(ico));
             viewHolder.albumView.setText(music.getAlbumName());
             String songs = String.format( AppliContext.sContext.getResources().getString( R.string.album_songs_string), music.getAlbumSongs());
             viewHolder.songView.setText(songs);

@@ -1,24 +1,22 @@
 package oyh.ccmusic.adapter;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.icu.text.SimpleDateFormat;
 import android.os.Build;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import oyh.ccmusic.R;
 import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.domain.Music;
+import oyh.ccmusic.util.ImageUtils;
+import oyh.ccmusic.util.MusicMemoryCacheUtils;
 import oyh.ccmusic.util.MusicUtils;
 
 /**
@@ -72,10 +70,10 @@ public class MyloveMusicListAdapter extends BaseAdapter {
             viewHolder= (ViewHolder) view.getTag();
         }
         Music music= (Music) getItem(i);
-        Bitmap icon = BitmapFactory.decodeFile(music.getImage());
+        Bitmap icon = MusicMemoryCacheUtils.getInstance().load(music.getImage());
         viewHolder.icon.setImageBitmap(icon == null ?
-                BitmapFactory.decodeResource(
-                        AppliContext.sContext.getResources(), R.mipmap.img) : icon);
+                ImageUtils
+                        .scaleBitmap(R.mipmap.img) : ImageUtils.scaleBitmap(icon));
         viewHolder.title.setText(music.getTitle());
         viewHolder.artist.setText(music.getArtist());
         String total = format.format(new Date(music.getLength()));

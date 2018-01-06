@@ -62,7 +62,9 @@ public class LocalMusicUtils {
                 MediaStore.Audio.Media.DATA + " like ?",
                 new String[]{path + "%"},
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
-        if (cursor == null) return results;
+        if (cursor == null) {
+            return results;
+        }
         Music music;
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             String isMusic = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.IS_MUSIC));

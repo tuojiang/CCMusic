@@ -8,11 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,21 +16,16 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.text.TextUtils;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -45,7 +36,6 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -58,6 +48,8 @@ import oyh.ccmusic.adapter.LrcView;
 import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 import oyh.ccmusic.util.BarChartView;
+import oyh.ccmusic.util.ImageUtils;
+import oyh.ccmusic.util.MusicMemoryCacheUtils;
 import oyh.ccmusic.util.MusicUtils;
 import oyh.ccmusic.util.SlidingUpPanelLayout;
 
@@ -111,7 +103,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private UpdateViewReceiver updateViewReceiver;
     private FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction transaction;
-    private static SimpleDateFormat format = new SimpleDateFormat("mm:ss");
+    private static java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("mm:ss");
     private ArrayList<Music> mMediaLists = new ArrayList<>();
     private LocalMusicListAdapter adapter= new LocalMusicListAdapter(mActivity);
     private LocalMusicListAdapter gridadapter;
@@ -162,9 +154,12 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             seekBar.setProgress(currentTime);
             String current = format .format(new Date(currentTime));
             String total = format.format(new Date(totalTime));
-            Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPosition).getImage());
-            mIcon.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
-                    getResources(), R.mipmap.img) : icon);
+//            Bitmap icon = BitmapFactory.decodeFile(MusicUtils.sMusicList.get(currentPosition).getImage());
+//            mIcon.setImageBitmap(icon==null ? BitmapFactory.decodeResource(
+//                    getResources(), R.mipmap.img) : icon);
+            Bitmap icon = MusicMemoryCacheUtils.getInstance().load(MusicUtils.sMusicList.get(currentPosition).getImage());
+            mIcon.setImageBitmap(icon==null ? ImageUtils
+                    .scaleBitmap(R.mipmap.img) : ImageUtils.scaleBitmap(icon));
             currentTimeTxt.setText(current);
             totalTimeTxt.setText(total);
                         seekBar.setProgress(mActivity.getLocalMusicService().callCurrentTime());
@@ -349,6 +344,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
      */
     public class MySeekBar implements SeekBar.OnSeekBarChangeListener {
 
+        @Override
         public void onProgressChanged(SeekBar seekBar, int progress,
                                       boolean fromUser) {
             mProgress = progress;
@@ -359,10 +355,12 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         }
 
         /*滚动时,应当暂停后台定时器*/
+        @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
             isSeekBarChanging = true;
         }
         /*滑动结束后，重新设置值*/
+        @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             isSeekBarChanging = false;
             if (mActivity.getLocalMusicService() != null) {
@@ -513,10 +511,13 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
             myListener=new MyListener(position);
             Music music = (Music) getItem(position);
 
-            Bitmap icon = BitmapFactory.decodeFile(music.getImage());
-            viewHolder.icon.setImageBitmap(icon == null ?
-                    BitmapFactory.decodeResource(
-                            AppliContext.sContext.getResources(), R.mipmap.img) : icon);
+//            Bitmap icon = BitmapFactory.decodeFile(music.getImage());
+//            viewHolder.icon.setImageBitmap(icon == null ?
+//                    BitmapFactory.decodeResource(
+//                            AppliContext.sContext.getResources(), R.mipmap.img) : icon);
+            Bitmap icon= MusicMemoryCacheUtils.getInstance().load(music.getImage());
+            viewHolder.icon.setImageBitmap(icon==null? ImageUtils
+                    .scaleBitmap(R.mipmap.img) : ImageUtils.scaleBitmap(icon));
             viewHolder.title.setText(music.getTitle());
             viewHolder.artist.setText(music.getArtist());
             viewHolder.menuImage.setOnClickListener(myListener);

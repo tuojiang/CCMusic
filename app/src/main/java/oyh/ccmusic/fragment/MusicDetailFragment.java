@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,7 +22,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import java.text.SimpleDateFormat;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,7 +47,7 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
     private ImageButton bt_play, bt_pre, bt_next;
     private SeekBar seekBar;
     private MyHandler mHandler = new MyHandler();
-    private SimpleDateFormat format = new SimpleDateFormat("mm:ss");
+    private java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("mm:ss");
     private TextView currentTimeTxt, totalTimeTxt;
     private TextView mMusicTitle,mMusicArtist;
     private int currentPosition;
@@ -291,6 +290,7 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
      */
     public class MySeekBar implements SeekBar.OnSeekBarChangeListener {
 
+        @Override
         public void onProgressChanged(SeekBar seekBar, int progress,
                                       boolean fromUser) {
             mProgress = progress;
@@ -301,10 +301,12 @@ public class MusicDetailFragment extends Fragment implements View.OnClickListene
         }
 
         /*滚动时,应当暂停后台定时器*/
+        @Override
         public void onStartTrackingTouch(SeekBar seekBar) {
             isSeekBarChanging = true;
         }
         /*滑动结束后，重新设置值*/
+        @Override
         public void onStopTrackingTouch(SeekBar seekBar) {
             isSeekBarChanging = false;
             if (mActivity.getLocalMusicService() != null) {

@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,6 +25,8 @@ import oyh.ccmusic.R;
 import oyh.ccmusic.activity.AppliContext;
 import oyh.ccmusic.activity.MainActivity;
 import oyh.ccmusic.domain.Music;
+import oyh.ccmusic.util.ImageUtils;
+import oyh.ccmusic.util.MusicMemoryCacheUtils;
 import oyh.ccmusic.util.MusicUtils;
 
 import static oyh.ccmusic.util.MusicUtils.queryGenrestItem;
@@ -129,7 +130,7 @@ public class GenresMusicFragment extends Fragment {
             fragmentManager=getFragmentManager();
             transaction = fragmentManager.beginTransaction();
             GenresItemFragment genresItemFragment=new GenresItemFragment();
-            transaction.add(R.id.music_detail_fragment,genresItemFragment).addToBackStack(null).commit();
+            transaction.replace(R.id.music_detail_fragment,genresItemFragment).addToBackStack(null).commit();
         }
     };
 
@@ -179,8 +180,11 @@ public class GenresMusicFragment extends Fragment {
                 viewHolder= (ViewHolder) view.getTag();
             }
             Music music= (Music) getItem(i);
-            Bitmap ico= BitmapFactory.decodeFile(music.getImage());
-            viewHolder.ico.setImageBitmap(ico==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
+            Bitmap icon = MusicMemoryCacheUtils.getInstance().load(music.getImage());
+            viewHolder.ico.setImageBitmap(icon==null ? ImageUtils
+                    .scaleBitmap(R.mipmap.img) : ImageUtils.scaleBitmap(icon));
+//            Bitmap ico= BitmapFactory.decodeFile(music.getImage());
+//            viewHolder.ico.setImageBitmap(ico==null?BitmapFactory.decodeResource(AppliContext.sContext.getResources(),R.mipmap.img):ico);
             viewHolder.title.setText(music.getGenres());
             String amount= MusicUtils.map.get(music.getGenres());
             String songs = String.format( AppliContext.sContext.getResources().getString( R.string.genres_songs_string), amount);
