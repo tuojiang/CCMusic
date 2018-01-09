@@ -430,6 +430,7 @@ public class LocalMusicService extends Service{
             //传回处理后的歌词文件
             lrcList = mLrcProcess.getLrcList();
             //发送广播
+            MusicUtils.initLrcList(AppliContext.sContext,lrcList);
             Intent intent = new Intent();
             Bundle bundle = new Bundle();
             intent.putParcelableArrayListExtra("LRC_LIST", (ArrayList<? extends Parcelable>) lrcList);

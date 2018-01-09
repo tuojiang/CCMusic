@@ -122,6 +122,7 @@ public class SearchMusic {
 					if(info.attr("href").startsWith("/album")) {
 						searchResult.setAlbum(info.text().replaceAll("《|》", ""));
 					}
+
 				}
 				
 				searchResults.add(searchResult);

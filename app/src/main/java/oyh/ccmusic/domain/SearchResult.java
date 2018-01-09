@@ -11,6 +11,16 @@ public class SearchResult implements Serializable{
     private String url;
     private String artist;
     private String album;
+    private String image;
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
 
     public String getMusicName() {
         return musicName;

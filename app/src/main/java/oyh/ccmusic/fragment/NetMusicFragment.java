@@ -73,6 +73,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
     private MediaPlayer mPlayer=new MediaPlayer();
     private SearchResultAdapter mSearchResultAdapter;
     private ArrayList<SearchResult> mResultData = new ArrayList<SearchResult>();
+    private ArrayList<SearchResult> mResultForImage = new ArrayList<SearchResult>();
     private int mPage = 0;
     private int mLastItem;
     private boolean hasMoreData = true;
@@ -80,9 +81,11 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
     private String songAdress;//歌曲地址
     private String file_link;
     private String lrc_link;
+    private String songIcon;
     private String songTitle;
     private String netLrc;
     private String getDate;
+    private String getDate1;
     private int file_duration,file_size;
     public NetMusicFragment() {
     }
@@ -120,7 +123,8 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
 
         mSearchResultListView.addFooterView(mFooterView);
 
-        mSearchResultAdapter = new SearchResultAdapter(mResultData);
+//        mSearchResultAdapter = new SearchResultAdapter(mResultData);
+        mSearchResultAdapter = new SearchResultAdapter(mResultForImage);
         mSearchResultListView.setAdapter(mSearchResultAdapter);
         mSearchResultListView.setOnScrollListener(mListViewScrollListener);
         mSearchResultListView.setOnItemClickListener(mResultItemClickListener);
@@ -295,10 +299,12 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
                     }
                     try {
                         JSONObject object = new JSONObject(getDate);
+
                         JSONObject bitrateJSON = object.getJSONObject("bitrate");
                         JSONObject songinfoJSON = object.getJSONObject("songinfo");
                         file_link = bitrateJSON.getString("file_link");
-                        lrc_link=songinfoJSON.getString("lrclink");
+                        lrc_link = songinfoJSON.getString("lrclink");
+                        songIcon = songinfoJSON.getString("pic_small");
                         MusicUtils.put("filesize",bitrateJSON.getString("file_size"));
                         songTitle=songinfoJSON.getString("title");
                         Log.e("getDownloadUrl", "lrc_link="+lrc_link+"getDownloadUrl="+file_link);
@@ -311,6 +317,7 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
             }
         }).start();
     }
+
     /**
      * 播放点击歌曲并保存当前位置值
      * @param songid
@@ -384,61 +391,72 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
         mSearchProgressBar.setVisibility(View.VISIBLE);
         mSearchResultListView.setVisibility(View.GONE);
             startSearch(content);
-//            query2(content);
+            query2(content);
         }
 
     }
 //    这种方式也可以解析得到相应数据
-//    private void query2(final String title){
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    HttpURLConnection connection;
-//                    String finalTitle = URLEncoder.encode(title,"utf-8");
-//                    URL url = new URL("http://tingapi.ting.baidu.com/v1/restserver/ting?from=webapp_music&method=baidu.ting.search.catalogSug&format=json&callback=&query="+finalTitle);
-//                    connection = (HttpURLConnection) url.openConnection();
-//                    connection.setConnectTimeout(60*1000);
-//                    connection.setReadTimeout(60*1000);
-//                    connection.connect();
-//                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-//                    String s;
-//                    if ((s=reader.readLine())!=null)
-//                        Log.e("s", "s="+s);
-//                    doJson(s);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }).start();
-//    }
+    private void query2(final String title){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject jsonObject = null;
+                    HttpURLConnection connection;
+                    String finalTitle = URLEncoder.encode(title,"utf-8");
+                    URL url = new URL("http://tingapi.ting.baidu.com/v1/restserver/ting?from=webapp_music&method=baidu.ting.search.catalogSug&format=json&callback=&query="+finalTitle);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.setConnectTimeout(60*1000);
+                    connection.setReadTimeout(60*1000);
+                    connection.connect();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String s;
+                    if ((s=reader.readLine())!=null) {
+                        s = s.replace("\\","");//去掉\\
+                        Log.e("s", "s=" + s);
+                        getDate1 =s;
+                    }
+
+                    jsonObject = new JSONObject(getDate1);
+                    JSONArray array = new JSONArray(jsonObject.getString("album"));
+                    for (int i=0;i<array.length();i++){
+                        JSONObject object = array.getJSONObject(i);
+                        songIcon = object.getString("artistpic");
+                        mResultForImage.get(i).setImage(songIcon);
+                        Log.e("tag"," songIcon ="+songIcon);
+
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 //
 //
-//    public SearchResult doJson(String json){
-//        SearchResult song = null;
-//        JSONObject jsonObject = null;
-//        try {
-//            //去掉括号
-//            json = json.replace("(","");
-//            json = json.replace(")","");
-//            jsonObject = new JSONObject(json);
-//            JSONArray array = new JSONArray(jsonObject.getString("song"));
-//            for (int i=0;i<array.length();i++){
-//                JSONObject object = array.getJSONObject(i);
-//                String songname = object.getString("songname");
-//                String artistname = object.getString("artistname");
-//                String songid = object.getString("songid");
-//                currentPos =songid;
-//                String adress = getAdress(songid);
-//                SearchResult song1 = new SearchResult();
-//                Log.e("tag",songname+"  "+artistname+"  "+songid);
-//
-//            }
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//        return song;
-//    }
+    public SearchResult doJson(String json){
+        SearchResult song = null;
+        JSONObject jsonObject = null;
+        try {
+            //去掉括号
+            json = json.replace("(","");
+            json = json.replace(")","");
+            jsonObject = new JSONObject(json);
+            JSONArray array = new JSONArray(jsonObject.getString("album"));
+            for (int i=0;i<array.length();i++){
+                JSONObject object = array.getJSONObject(i);
+                songIcon = object.getString("artistpic");
+                mResultForImage.get(i).setImage(songIcon);
+                Log.e("tag"," songIcon ="+songIcon);
+
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return song;
+    }
 
     /**
      * 获取歌词地址
@@ -502,8 +520,10 @@ public class NetMusicFragment extends Fragment implements View.OnClickListener{
                     return;
                 }
 
-                if(mPage == 1) mResultData.clear();
-
+                if(mPage == 1) {
+                    mResultData.clear();
+                }
+                mResultForImage.addAll(results);
                 mResultData.addAll(results);
                 mSearchResultAdapter.notifyDataSetChanged();
             }

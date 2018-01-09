@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import oyh.ccmusic.activity.AppliContext;
+import oyh.ccmusic.domain.LrcContent;
 import oyh.ccmusic.domain.Music;
 
 
@@ -42,6 +43,7 @@ public class MusicUtils {
     //本地搜索初始化列表
     public static ArrayList<String> localSearchList =  new ArrayList<>();
     public static ArrayList<Music> myloveList =  new ArrayList<>();
+    public static ArrayList<LrcContent> mLrcList =  new ArrayList<>();
     public static HashMap<String, String> map = new HashMap<String, String>();
     /**
      * 初始化歌曲列表
@@ -52,7 +54,14 @@ public class MusicUtils {
         sMusicList.addAll(LocalMusicUtils.getInstance(context).queryMusic(Environment.getExternalStorageDirectory().getAbsolutePath()));
         commonList.addAll(sMusicList);
     }
-
+    /**
+     * 初始化歌词
+     */
+    public static void initLrcList(Context context,List<LrcContent> list) {
+        // 获取歌曲列表
+        mLrcList.clear();
+        mLrcList.addAll(list);
+    }
     /**
      * 根据名称进行查询
      * @param context

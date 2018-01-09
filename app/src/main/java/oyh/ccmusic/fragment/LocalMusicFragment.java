@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -104,10 +105,10 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private FragmentManager fragmentManager;
     private android.support.v4.app.FragmentTransaction transaction;
     private static java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("mm:ss");
-    private ArrayList<Music> mMediaLists = new ArrayList<>();
     private LocalMusicListAdapter adapter= new LocalMusicListAdapter(mActivity);
     private LocalMusicListAdapter gridadapter;
     private LocalMusicListAdapter listadapter;
+
     private String UPDATE_VIEW="oyh.ccmusic.updateview";
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
@@ -141,7 +142,16 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
                 seekTime();
         super.onResume();
     }
+    Runnable mRunnable = new Runnable() {
 
+        @Override
+        public void run() {
+
+            lrcView.setIndex(mActivity.getLocalMusicService().lrcIndex());
+            lrcView.invalidate();
+            mHandler.postDelayed(mRunnable, 100);
+        }
+    };
     private  class MyHandler extends Handler {
 
         @Override
@@ -179,6 +189,9 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
         public void onReceive(Context context, Intent intent) {
             isGridView=intent.getBooleanExtra("isGridView",true);
             updateLayout(isGridView);
+            if (intent.getAction().equals("yihong.lrc")){
+
+            }
         }
     }
 
@@ -410,6 +423,7 @@ public class LocalMusicFragment extends Fragment implements View.OnClickListener
     private void play(int position) {
         int pos=mActivity.getLocalMusicService().play(position);
         currentPos=position;
+        //TODO 播放歌词同步异常
         seekTime();
     }
 
